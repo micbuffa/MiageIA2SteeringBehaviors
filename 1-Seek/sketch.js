@@ -1,5 +1,4 @@
-let vehicle;
-let target;
+let target, vehicle;
 
 // la fonction setup est appelée une fois au démarrage du programme par p5.js
 function setup() {
@@ -7,6 +6,10 @@ function setup() {
   createCanvas(800, 800);
   // on crée un véhicule à la position (100, 100)
   vehicle = new Vehicle(100, 100);
+
+  // TODO: créer un tableau de véhicules en global
+  // ajouter nb vehicules au tableau dans une boucle
+  // avec une position random dans le canvas
 }
 
 // la fonction draw est appelée en boucle par p5.js, 60 fois par seconde par défaut
@@ -30,14 +33,13 @@ function draw() {
   // pas de contours car on a appelé noStroke() plus haut
   circle(target.x, target.y, 32);
 
-  // On appelle la méthode seek du vehicule avec la position de la souris en paramètre
   vehicle.seek(target);
-
-  // le vehicule a un comportement seek activé, l'appel à update va le faire se rapprocher de la position de la souris
   vehicle.update();
-
-  // on dessine le véhicule
   vehicle.show();
+
+  // TODO: boucle sur le tableau de véhicules
+  // pour chaque véhicule : seek, update, show
+
 
   // draw text at 20, 20 with current heading
   fill(255);
@@ -45,5 +47,6 @@ function draw() {
   let angle = vehicle.vel.heading();
   let angleDegree = degrees(angle);
   text("heading: " + angleDegree.toFixed(0) + " degrees", 20, 20);
+
 
 }

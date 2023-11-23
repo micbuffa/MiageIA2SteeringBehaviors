@@ -7,14 +7,16 @@ class Vehicle {
     // accélération du véhicule
     this.acc = createVector(0, 0);
     // vitesse maximale du véhicule
-    this.maxSpeed = 4;
+    this.maxSpeed = 10;
     // force maximale appliquée au véhicule
     this.maxForce = 0.25;
     // rayon du véhicule
     this.r = 16;
   }
 
-  // seek est une méthode qui permet de faire se rapprocher le véhicule de la cible passée en paramètre
+  /*
+   seek est une méthode qui permet de faire se rapprocher le véhicule de la cible passée en paramètre
+   */
   seek(target) {
     // on calcule la direction vers la cible
     // C'est l'ETAPE 1 (action : se diriger vers une cible)
@@ -28,7 +30,43 @@ class Vehicle {
     // on limite cette force à la longueur maxForce
     force.limit(this.maxForce);
     // on applique la force au véhicule
-    this.applyForce(force);
+    return force;
+  }
+
+  // inverse de seek !
+  flee(target) {
+    return this.seek(target).mult(-1);
+  }
+
+  /* Poursuite d'un point devant la target !
+     cette methode renvoie la force à appliquer au véhicule
+  */
+  pursue(target) {
+    // TODO
+    // 1 - calcul de la position future de la cible
+    // on fait une copie de la position de la target
+
+
+    // 2 - On calcule un vecteur colinéaire au vecteur vitesse de la cible,
+    // et on le multiplie par 10 (10 frames)
+
+    // 3 - prediction dans 10 frames = 10 fois la longueur du vecteur
+
+    // 4 - on positionne de la target au bout de ce vecteur
+
+
+    // 2 - dessin d'un cercle vert de rayon 16 pour voir ce point
+
+
+    // 3 - appel à seek avec ce point comme cible 
+    // n'oubliez pas, on renvoie la force à appliquer au véhicule !
+  }
+
+  /* inverse de pursue
+     cette methode renvoie la force à appliquer au véhicule
+  */
+  evade(target) {
+    // TODO !
   }
 
   // applyForce est une méthode qui permet d'appliquer une force au véhicule
@@ -64,7 +102,6 @@ class Vehicle {
     // sauvegarde du contexte graphique (couleur pleine, fil de fer, épaisseur du trait, 
     // position et rotation du repère de référence)
     push();
-
     // on déplace le repère de référence.
     translate(this.pos.x, this.pos.y);
     // et on le tourne. heading() renvoie l'angle du vecteur vitesse (c'est l'angle du véhicule)
@@ -95,7 +132,7 @@ class Vehicle {
     triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0);
     pop();
   }
-  
+
   // que fait cette méthode ?
   edges() {
     if (this.pos.x > width + this.r) {
@@ -108,5 +145,23 @@ class Vehicle {
     } else if (this.pos.y < -this.r) {
       this.pos.y = height + this.r;
     }
+  }
+}
+
+class Target extends Vehicle {
+  constructor(x, y) {
+    super(x, y);
+    this.vel = p5.Vector.random2D();
+    this.vel.mult(5);
+  }
+
+  show() {
+    stroke(255);
+    strokeWeight(2);
+    fill("#F063A4");
+    push();
+    translate(this.pos.x, this.pos.y);
+    circle(0, 0, this.r * 2);
+    pop();
   }
 }
