@@ -14,6 +14,10 @@ class Vehicle {
     this.r = 16;
   }
 
+  applyBehaviors(target) {
+    let force1 = this.seek(target);
+    this.applyForce(force1);
+  }
   // seek est une méthode qui permet de faire se rapprocher le véhicule de la cible passée en paramètre
   seek(target) {
     // on calcule la direction vers la cible
@@ -27,8 +31,12 @@ class Vehicle {
     force.sub(this.vel);
     // on limite cette force à la longueur maxForce
     force.limit(this.maxForce);
-    // on applique la force au véhicule
-    this.applyForce(force);
+    return force;
+  }
+
+  flee(target) {
+    // inverse de seek !
+    return this.seek(target).mult(-1);
   }
 
   // applyForce est une méthode qui permet d'appliquer une force au véhicule
@@ -96,6 +104,8 @@ class Vehicle {
   }
   
   // que fait cette méthode ?
+  // elle permet de faire réapparaitre le véhicule de 
+  // l'autre côté du canvas
   edges() {
     if (this.pos.x > width + this.r) {
       this.pos.x = -this.r;
@@ -108,4 +118,18 @@ class Vehicle {
       this.pos.y = height + this.r;
     }
   }
+}
+
+class Target extends Vehicle {
+  constructor(x, y) {
+    super(x, y);
+    this.vel = createVector(random(4, 8), random(4, 8));
+  }
+
+  show() {
+    fill("green");
+    noStroke();
+    circle(this.pos.x, this.pos.y, 32);
+  }
+
 }
