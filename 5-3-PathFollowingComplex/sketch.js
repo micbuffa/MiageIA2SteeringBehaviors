@@ -20,7 +20,7 @@ let path;
 let vehicles = [];
 
 function setup() {
-  createCanvas(640, 360);
+  createCanvas(1200, 800);
   // la fonction suivante créer un chemin composé de plusieurs points
   newPath();
 
@@ -41,10 +41,16 @@ function draw() {
   path.display();
 
   for (let v of vehicles) {
-    // On applique les comportements pour suivre le chemin
-    v.applyBehaviors(vehicles, path);
-    // on a regroupé update, draw etc. dans une méthode run (update, borders, display, etc.)
-    v.run();
+    if (v.couleur == "green") {
+      // cas particulier d'un déambulateur :-)
+      v.wander();
+      v.edges();
+    } else {
+      // On applique les comportements pour suivre le chemin
+      v.applyBehaviors(vehicles, path);
+    }
+     // on a regroupé update, draw etc. dans une méthode run (update, borders, display, etc.)
+     v.run();
   }
 }
 
@@ -62,12 +68,24 @@ function newPath() {
 function newVehicle(x, y) {
   let maxspeed = random(2, 4);
   let maxforce = 0.3;
-  vehicles.push(new Vehicle(x, y, maxspeed, maxforce));
+  let v = new Vehicle(x, y, maxspeed, maxforce);
+  vehicles.push(v);
+  return v;
 }
 
 function keyPressed() {
   if (key == "d") {
     debug = !debug;
+  } else if (key == "s") {
+    let v = newVehicle(mouseX, mouseY);
+    v.maxspeed = 8;
+    v.maxForce = 0.5;
+    v.r = 15
+    v.couleur = "red";
+  } else if (key == "w") {
+    v = newVehicle(mouseX, mouseY);
+    v.couleur = "green";
+    v.r = 40;
   }
 }
 

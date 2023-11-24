@@ -19,6 +19,14 @@ class Vehicle {
     this.maxforce = mf;
     this.acceleration = createVector(0, 0);
     this.velocity = createVector(this.maxspeed, 0);
+    this.couleur = "black";
+
+    // pour comportement wander
+    this.wanderTheta = PI / 2;
+    this.displaceRange = 0.3;
+    this.pathMaxLength = 50;
+
+    this.path = [];
   }
 
   // Implémente deux comportements : suivi de chemin complexe et séparation
@@ -61,17 +69,20 @@ class Vehicle {
     let predictpos = p5.Vector.add(this.position, predict);
 
     // On cherche la projection sur le chemin.
-    // Comme le chemin est composé de plusieurs segments, on cherche la projection sur chaque segment
+    // Comme le chemin est composé de plusieurs segments, 
+    // on cherche la projection sur chaque segment
     // et on gardera la plus proche comme étant la bonne
 
     let normal = null;
     let target = null;
-    let worldRecord = 1000000; // distance max difficile à battre :-) (on cherche la plus petite distance)
+    let worldRecord = 1000000; // distance max difficile à battre :-) 
+    // (on cherche la plus petite distance)
 
     // On parcourt les points du chemin
     for (let i = 0; i < path.points.length; i++) {
       // segment courant a
-      // segment suivant b, si a est le dernier segment, b devient le premier segment
+      // segment suivant b, si a est le dernier segment, 
+      // b devient le premier segment
       let a = path.points[i];
       let b = path.points[(i + 1) % path.points.length]; // le chemin boucle. On utilise un modulo
 
@@ -92,7 +103,7 @@ class Vehicle {
         normalPoint = b.copy();
         // Si on est vraiment à la fin, alors on prend a et b du segment suivant
         a = path.points[(i + 1) % path.points.length];
-        b = path.points[(i + 2) % path.points.length]; 
+        b = path.points[(i + 2) % path.points.length];
         dir = p5.Vector.sub(b, a);
       }
 
@@ -192,6 +203,68 @@ class Vehicle {
     this.position.add(this.velocity);
     // Reset accelertion to 0 each cycle
     this.acceleration.mult(0);
+
+    // on rajoute la position courante dans le tableau
+    this.path.push(this.position.copy());
+
+    // si le tableau a plus de 50 éléments, on vire le plus ancien
+    if(this.path.length > this.pathMaxLength) {
+      this.path.shift();
+    }
+  }
+  wander() {
+    // point devant le véhicule
+    let wanderPoint = this.velocity.copy();
+    wanderPoint.setMag(100);
+    wanderPoint.add(this.position);
+
+    // on le dessine sous la forme d'une petit cercle rouge
+    //fill(255, 0, 0);
+    //noStroke();
+    //circle(wanderPoint.x, wanderPoint.y, 8);
+
+    // Cercle autour du point
+    let wanderRadius = 50;
+    //noFill();
+    //stroke(255);
+    //circle(wanderPoint.x, wanderPoint.y, wanderRadius * 2);
+
+    // on dessine une lign qui relie le vaisseau à ce point
+    // c'est la ligne blanche en face du vaisseau
+    //line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+
+    // On va s'occuper de calculer le point vert SUR LE CERCLE
+    // il fait un angle wanderTheta avec le centre du cercle
+    // l'angle final par rapport à l'axe des X c'est l'angle du vaisseau
+    // + cet angle
+    let theta = this.wanderTheta + this.velocity.heading();
+
+    let x = wanderRadius * cos(theta);
+    let y = wanderRadius * sin(theta);
+
+    // maintenant wanderPoint c'est un point sur le cercle
+    wanderPoint.add(x, y);
+
+    // on le dessine sous la forme d'un cercle vert
+    //fill(0, 255, 0);
+    //noStroke();
+    //circle(wanderPoint.x, wanderPoint.y, 16);
+
+    // on dessine le vecteur desiredSpeed qui va du vaisseau au poibnt vert
+    //stroke(255);
+    //line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+
+    // On a donc la vitesse désirée que l'on cherche qui est le vecteur
+    // allant du vaisseau au cercle vert. On le calcule :
+    // ci-dessous, steer c'est la desiredSpeed directement !
+    let steer = wanderPoint.sub(this.position);
+
+    steer.setMag(this.maxforce);
+    this.applyForce(steer);
+
+    // On déplace le point vert sur le cerlcle (en radians)
+    this.displaceRange = 0.3;
+    this.wanderTheta += random(-this.displaceRange, this.displaceRange);
   }
 
   // A method that calculates and applies a steering force towards a target
@@ -210,13 +283,49 @@ class Vehicle {
   }
 
   render() {
-    // Simpler boid is just a circle
-    fill(75);
-    stroke(0);
-    push();
-    translate(this.position.x, this.position.y);
-    ellipse(0, 0, this.r, this.r);
-    pop();
+    if (this.couleur == "green") {
+      // cas du wanderer
+      // dessin du chemin
+      this.path.forEach((p, index) => {
+        if (!(index % 3)) {
+          stroke(this.couleur);
+          fill(this.couleur);
+          circle(p.x, p.y, 1);
+        }
+      });
+
+      // dessin du vaisseau
+      stroke(255);
+      strokeWeight(2);
+      fill(this.couleur);
+      push();
+      translate(this.position.x, this.position.y);
+      rotate(this.velocity.heading());
+      triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+      pop();
+    } else {
+      // Simpler boid is just a circle
+      fill(this.couleur);
+      stroke(0);
+      push();
+      translate(this.position.x, this.position.y);
+      ellipse(0, 0, this.r, this.r);
+      pop();
+    }
+
+  }
+
+  edges() {
+    if (this.position.x > width + this.r) {
+      this.position.x = -this.r;
+    } else if (this.position.x < -this.r) {
+      this.position.x = width + this.r;
+    }
+    if (this.position.y > height + this.r) {
+      this.position.y = -this.r;
+    } else if (this.position.y < -this.r) {
+      this.position.y = height + this.r;
+    }
   }
 }
 
