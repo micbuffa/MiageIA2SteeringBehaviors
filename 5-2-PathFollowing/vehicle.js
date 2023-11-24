@@ -7,6 +7,9 @@
 // Path Following: https://editor.p5js.org/codingtrain/sketches/dqM054vBV
 // Complex Path: https://editor.p5js.org/codingtrain/sketches/2FFzvxwVt
 
+// on v1 qui part de pos et va vers a,
+// on a v2 qui part pos et va vers b
+// renvoie le point b projeté sur v1
 function findProjection(pos, a, b) {
   let v1 = p5.Vector.sub(a, pos);
   let v2 = p5.Vector.sub(b, pos);
@@ -32,18 +35,29 @@ class Vehicle {
 
     // Step 1 calculate future position
     let future = this.vel.copy();
+    // dans 20 frames d'animation
     future.mult(20);
     future.add(this.pos);
+
+    // on le dessine en rouge
     fill(255, 0, 0);
     noStroke();
     circle(future.x, future.y, 16);
 
     // Step 2 Is future on path?
+    // On calcule la projection perpendiculaire du point "futur" sur le chemin
     let target = findProjection(path.start, future, path.end);
+
+    // on le dessine en vert
     fill(0, 255, 0);
     noStroke();
     circle(target.x, target.y, 16);
 
+    // on regarde si la distance entre le point futur et le point projeté
+    // est inférieure à la demi largeur du chemin.
+    // Si oui, on efait rien, le vehicule est sur la route,
+    // si non on fait seek vers le point projeté, pour rapprocher
+    // le véhicule de la route
     let d = p5.Vector.dist(future, target);
     if (d > path.radius) {
       return this.seek(target);

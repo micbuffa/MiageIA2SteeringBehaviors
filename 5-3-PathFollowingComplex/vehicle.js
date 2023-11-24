@@ -29,8 +29,8 @@ class Vehicle {
     // separation des autres véhicules, le resultat est la force s
     let s = this.separate(vehicles);
     // On fait une somme pondérée des deux forces
-    f.mult(3);
-    s.mult(1); // essayez zéro ici !!!!
+    f.mult(2);
+    s.mult(3); // essayez zéro ici !!!!
     // On applique les forces au véhicule
     this.applyForce(f);
     this.applyForce(s);

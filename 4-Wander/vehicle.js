@@ -1,50 +1,75 @@
 class Vehicle {
-  constructor(x, y) {
+  constructor(x, y, couleur) {
     this.pos = createVector(x, y);
     this.vel = createVector(1, 0);
     this.acc = createVector(0, 0);
     this.maxSpeed = 4;
     this.maxForce = 0.2;
     this.r = 16;
+    this.couleur = couleur;
 
+
+    // pour comportement wander
     this.wanderTheta = PI / 2;
+    this.displaceRange = 0.3;
+    this.pathMaxLength = 50;
 
-    this.currentPath = [];
-    this.paths = [this.currentPath];
+    this.path = [];
   }
 
   wander() {
+    // point devant le véhicule
     let wanderPoint = this.vel.copy();
     wanderPoint.setMag(100);
     wanderPoint.add(this.pos);
-     fill(255, 0, 0);
-     noStroke();
-     circle(wanderPoint.x, wanderPoint.y, 8);
+    
+    // on le dessine sous la forme d'une petit cercle rouge
+     //fill(255, 0, 0);
+     //noStroke();
+     //circle(wanderPoint.x, wanderPoint.y, 8);
 
+    // Cercle autour du point
     let wanderRadius = 50;
-     noFill();
-     stroke(255);
-     circle(wanderPoint.x, wanderPoint.y, wanderRadius * 2);
-     line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+     //noFill();
+     //stroke(255);
+     //circle(wanderPoint.x, wanderPoint.y, wanderRadius * 2);
 
+     // on dessine une lign qui relie le vaisseau à ce point
+     // c'est la ligne blanche en face du vaisseau
+     //line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+
+     // On va s'occuper de calculer le point vert SUR LE CERCLE
+     // il fait un angle wanderTheta avec le centre du cercle
+     // l'angle final par rapport à l'axe des X c'est l'angle du vaisseau
+     // + cet angle
     let theta = this.wanderTheta + this.vel.heading();
 
     let x = wanderRadius * cos(theta);
     let y = wanderRadius * sin(theta);
+
+    // maintenant wanderPoint c'est un point sur le cercle
     wanderPoint.add(x, y);
-     fill(0, 255, 0);
-     noStroke();
-     circle(wanderPoint.x, wanderPoint.y, 16);
 
-     stroke(255);
-     line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+    // on le dessine sous la forme d'un cercle vert
+     //fill(0, 255, 0);
+     //noStroke();
+     //circle(wanderPoint.x, wanderPoint.y, 16);
 
+     // on dessine le vecteur desiredSpeed qui va du vaisseau au poibnt vert
+     //stroke(255);
+     //line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+
+     // On a donc la vitesse désirée que l'on cherche qui est le vecteur
+     // allant du vaisseau au cercle vert. On le calcule :
+     // ci-dessous, steer c'est la desiredSpeed directement !
     let steer = wanderPoint.sub(this.pos);
+
     steer.setMag(this.maxForce);
     this.applyForce(steer);
 
-    let displaceRange = 0.3;
-    this.wanderTheta += random(-displaceRange, displaceRange);
+    // On déplace le point vert sur le cerlcle (en radians)
+    this.displaceRange = 0.3;
+    this.wanderTheta += random(-this.displaceRange, this.displaceRange);
   }
 
   evade(vehicle) {
@@ -98,49 +123,49 @@ class Vehicle {
     this.pos.add(this.vel);
     this.acc.set(0, 0);
 
-    this.currentPath.push(this.pos.copy());
+    // on rajoute la position courante dans le tableau
+    this.path.push(this.pos.copy());
+
+    // si le tableau a plus de 50 éléments, on vire le plus ancien
+    if(this.path.length > this.pathMaxLength) {
+      this.path.shift();
+    }
   }
 
   show() {
+
+    // dessin du chemin
+    this.path.forEach((p, index) => { 
+      if(!(index % 3)) {
+        stroke(255);   
+      fill(this.couleur);
+      circle(p.x, p.y, 1);
+      }
+    });
+
+    // dessin du vaisseau
     stroke(255);
     strokeWeight(2);
-    fill(255);
+    fill(this.couleur);
     push();
     translate(this.pos.x, this.pos.y);
     rotate(this.vel.heading());
     triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
     pop();
 
-    for (let path of this.paths) {
-      beginShape();
-      noFill();
-      for (let v of path) {
-        vertex(v.x, v.y);
-      }
-      endShape();
-    }
+    
   }
 
   edges() {
-    let hitEdge = false;
     if (this.pos.x > width + this.r) {
       this.pos.x = -this.r;
-      hitEdge = true;
     } else if (this.pos.x < -this.r) {
       this.pos.x = width + this.r;
-      hitEdge = true;
     }
     if (this.pos.y > height + this.r) {
       this.pos.y = -this.r;
-      hitEdge = true;
     } else if (this.pos.y < -this.r) {
       this.pos.y = height + this.r;
-      hitEdge = true;
-    }
-
-    if (hitEdge) {
-      this.currentPath = [];
-      this.paths.push(this.currentPath);
     }
   }
 }

@@ -14,6 +14,7 @@ function setup() {
 
 function vectorProjection(a, b) {
   let bCopy = b.copy().normalize();
+  
   let sp = a.dot(bCopy);
   bCopy.mult(sp);
   return bCopy;

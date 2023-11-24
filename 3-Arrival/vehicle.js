@@ -59,7 +59,13 @@ class Vehicle {
 
       // 1 - dessiner le cercle de rayon 100 autour du véhicule
       noFill();
-      stroke("white")
+
+      // pour effet psychedelique, décommenter la ligne suivante, 
+      // commenter celle d'après
+      //stroke(random(255), random(255), random(255));
+      stroke(255);
+      
+      //strokeWeight(10);
       circle(this.pos.x, this.pos.y, rayon);
       
       // 2 - calcul de la distance entre la cible et le véhicule
@@ -96,6 +102,8 @@ class Vehicle {
     stroke(255);
     strokeWeight(2);
     fill(255);
+    stroke(0);
+    strokeWeight(2);
     push();
     translate(this.pos.x, this.pos.y);
     rotate(this.vel.heading());

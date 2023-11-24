@@ -6,7 +6,10 @@ function setup() {
 }
 
 function draw() {
+  // couleur pour effacer l'écran
   background(0);
+  // pour effet psychedelique
+  //background(0, 0, 0, 10);
 
   // Cible qui suit la souris, cercle rouge de rayon 32
   let target = createVector(mouseX, mouseY);
