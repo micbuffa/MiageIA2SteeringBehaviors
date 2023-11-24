@@ -54,8 +54,8 @@ class Vehicle {
       let rayon = this.rayonZoneDeFreinage;
       // 0 - ceci est un test, on essaye de faire varier la taille
       // de la zone de freinage en fonction de la vitesse
-      rayon = rayon * this.vel.mag() * 0.25;
-      rayon = max(50, rayon);
+      //rayon = rayon * this.vel.mag() * 0.25;
+      //rayon = max(50, rayon);
 
       // 1 - dessiner le cercle de rayon 100 autour du véhicule
       noFill();
