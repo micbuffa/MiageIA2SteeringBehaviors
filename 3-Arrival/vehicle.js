@@ -3,9 +3,10 @@ class Vehicle {
     this.pos = createVector(x, y);
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
-    this.maxSpeed = 6;
+    this.maxSpeed = 20;
     this.maxForce = 0.4;
     this.r = 16;
+    this.rayonZoneDeFreinage = 200;
   }
 
   evade(vehicle) {
@@ -36,11 +37,12 @@ class Vehicle {
   seek(target, arrival = false) {
     let force = p5.Vector.sub(target, this.pos);
     let desiredSpeed = this.maxSpeed;
+    
     if (arrival) {
       // On définit un rayon de 100 pixels autour de la cible
       // si la distance entre le véhicule courant et la cible
       // est inférieure à ce rayon, on ralentit le véhicule
-      // desiredSpeed de vient inversement proportionnelle à la distance
+      // desiredSpeed devient inversement proportionnelle à la distance
       // si la distance est petite, force = grande
       // Vous pourrez utiliser la fonction P5 
       // distance = map(valeur, valeurMin, valeurMax, nouvelleValeurMin, nouvelleValeurMax)
@@ -48,15 +50,29 @@ class Vehicle {
       // entre nouvelleValeurMin et nouvelleValeurMax
 
       // TODO !
-      // 1 - dessiner le cercle de rayon 100 autoir du véhicule
+      
+      let rayon = this.rayonZoneDeFreinage;
+      // 0 - ceci est un test, on essaye de faire varier la taille
+      // de la zone de freinage en fonction de la vitesse
+      rayon = rayon * this.vel.mag() * 0.25;
+      rayon = max(50, rayon);
 
+      // 1 - dessiner le cercle de rayon 100 autour du véhicule
+      noFill();
+      stroke("white")
+      circle(this.pos.x, this.pos.y, rayon);
+      
       // 2 - calcul de la distance entre la cible et le véhicule
+      let distance = p5.Vector.dist(this.pos, target);
 
       // 3 - si distance < rayon du cercle, alors on modifie desiredSPeed
       // qui devient inversement proportionnelle à la distance.
       // si d = rayon alors desiredSpeed = maxSpeed
       // si d = 0 alors desiredSpeed = 0
 
+      if(distance < rayon) {
+        desiredSpeed = map(distance, 0, rayon, 0, this.maxSpeed);
+      }
     }
 
     force.setMag(desiredSpeed);
