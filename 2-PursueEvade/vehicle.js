@@ -17,7 +17,7 @@ class Vehicle {
   /*
    seek est une méthode qui permet de faire se rapprocher le véhicule de la cible passée en paramètre
    */
-  seek(target) {
+    seek(target) {
     // on calcule la direction vers la cible
     // C'est l'ETAPE 1 (action : se diriger vers une cible)
     let force = p5.Vector.sub(target, this.pos);
@@ -35,7 +35,7 @@ class Vehicle {
 
   // inverse de seek !
   flee(target) {
-    return this.seek(target).mult(-1);
+    return this.seek(target.pos).mult(-1);
   }
 
   /* Poursuite d'un point devant la target !
@@ -45,28 +45,36 @@ class Vehicle {
     // TODO
     // 1 - calcul de la position future de la cible
     // on fait une copie de la position de la target
-
-
     // 2 - On calcule un vecteur colinéaire au vecteur vitesse de la cible,
+    let prediction = target.vel.copy();
     // et on le multiplie par 10 (10 frames)
-
     // 3 - prediction dans 10 frames = 10 fois la longueur du vecteur
-
+    prediction.mult(10);
     // 4 - on positionne de la target au bout de ce vecteur
+    prediction.add(target.pos);
+
+    // dessin du vecteur prediction
+    let v = p5.Vector.sub(prediction, target.pos);
+    this.drawVector(target.pos, v);
 
 
     // 2 - dessin d'un cercle vert de rayon 16 pour voir ce point
-
+    fill("green");
+    circle(prediction.x, prediction.y, 20);
 
     // 3 - appel à seek avec ce point comme cible 
+    let force = this.seek(prediction);
+
     // n'oubliez pas, on renvoie la force à appliquer au véhicule !
+    return force;
   }
 
   /* inverse de pursue
      cette methode renvoie la force à appliquer au véhicule
   */
   evade(target) {
-    // TODO !
+    let force = this.pursue(target);
+    return(force.mult(-1));
   }
 
   // applyForce est une méthode qui permet d'appliquer une force au véhicule
@@ -114,20 +122,19 @@ class Vehicle {
 
     // draw velocity vector
     pop();
-    this.drawVelocityVector();
+    this.drawVector(this.pos, this.vel.copy().mult(10));
   }
 
-  drawVelocityVector() {
+  drawVector(pos, v) {
     push();
-    // Dessin du vecteur vitesse
-    // Il part du centre du véhicule et va dans la direction du vecteur vitesse
+    // Dessin du vecteur depuis pos comme origne
     strokeWeight(3);
     stroke(255, 0, 0);
-    line(this.pos.x, this.pos.y, this.pos.x + this.vel.x * 10, this.pos.y + this.vel.y * 10);
+    line(pos.x, pos.y, pos.x + v.x, pos.y + v.y);
     // dessine une petite fleche au bout du vecteur vitesse
     let arrowSize = 5;
-    translate(this.pos.x + this.vel.x * 10, this.pos.y + this.vel.y * 10);
-    rotate(this.vel.heading());
+    translate(pos.x + v.x , pos.y + v.y);
+    rotate(v.heading());
     translate(-arrowSize / 2, 0);
     triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0);
     pop();
@@ -148,20 +155,3 @@ class Vehicle {
   }
 }
 
-class Target extends Vehicle {
-  constructor(x, y) {
-    super(x, y);
-    this.vel = p5.Vector.random2D();
-    this.vel.mult(5);
-  }
-
-  show() {
-    stroke(255);
-    strokeWeight(2);
-    fill("#F063A4");
-    push();
-    translate(this.pos.x, this.pos.y);
-    circle(0, 0, this.r * 2);
-    pop();
-  }
-}

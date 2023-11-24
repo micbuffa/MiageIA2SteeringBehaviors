@@ -48,6 +48,15 @@ class Vehicle {
       // entre nouvelleValeurMin et nouvelleValeurMax
 
       // TODO !
+      // 1 - dessiner le cercle de rayon 100 autoir du véhicule
+
+      // 2 - calcul de la distance entre la cible et le véhicule
+
+      // 3 - si distance < rayon du cercle, alors on modifie desiredSPeed
+      // qui devient inversement proportionnelle à la distance.
+      // si d = rayon alors desiredSpeed = maxSpeed
+      // si d = 0 alors desiredSpeed = 0
+
     }
 
     force.setMag(desiredSpeed);
