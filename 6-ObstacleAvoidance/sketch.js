@@ -9,6 +9,8 @@ function setup() {
   // On cree un obstalce au milieu de l'écran
   // un cercle de rayon 100px
   // TODO
+  obstacle = new Obstacle(width/2, height/2, 100);
+  obstacles.push(obstacle);
 }
 
 function draw() {
@@ -16,8 +18,17 @@ function draw() {
 
   target = createVector(mouseX, mouseY);
 
+  // Dessin de la cible qui suit la souris
+  // Dessine un cercle de rayon 32px à la position de la souris
+  fill(255, 0, 0);
+  noStroke();
+  circle(target.x, target.y, 32);
+
   // dessin des obstacles
   // TODO
+  obstacles.forEach(o => {
+    o.show();
+  })
 
   // pursuer = le véhicule poursuiveur, il vise un point devant la cible
   let steering = pursuer.applyBehaviors(target, obstacles);
@@ -26,9 +37,9 @@ function draw() {
   // déplacement et dessin du véhicule et de la target
   pursuer.update();
   pursuer.show();
+}
 
-  // Dessine un cercle de rayon 32px à la position de la souris
-   fill(255, 0, 0);
-   noStroke();
-   circle(target.x, target.y, 32);
+function mousePressed() {
+  obstacle = new Obstacle(mouseX, mouseY, random(5, 60));
+  obstacles.push(obstacle);
 }
