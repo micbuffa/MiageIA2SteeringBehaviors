@@ -15,6 +15,8 @@ function findProjection(pos, a, b) {
 }
 
 class Vehicle {
+  static debug = false;
+
   constructor(x, y) {
     // position du véhicule
     this.pos = createVector(x, y);
@@ -25,25 +27,28 @@ class Vehicle {
     // vitesse maximale du véhicule
     this.maxSpeed = 6;
     // force maximale appliquée au véhicule
-    this.maxForce = 0.3;
-    // rayon du véhicule
-    this.r = 16;
+    this.maxForce = 0.9;
+
+    this.r_pourDessin = 8;
+    // rayon du véhicule pour l'évitement
+    this.r = this.r_pourDessin * 3;
 
     // Pour évitement d'obstacle
-    this.largeurZoneEvitementDevantVaisseau = 40;
+    this.largeurZoneEvitementDevantVaisseau = this.r / 2;
   }
 
   // on fait une méthode applyBehaviors qui applique les comportements
   // seek et avoid
   applyBehaviors(target, obstacles) {
     let seekForce = this.arrive(target);
-    let avoidForce = this.avoidAmeliore(obstacles);
+    let avoidForce = this.avoidAmeliore(obstacles, vehicules);
     //let avoidForce = this.avoidAmeliore(obstacles);
 
     seekForce.mult(0.2);
-    avoidForce.mult(0.5);
-    let totalForce = p5.Vector.add(seekForce, avoidForce);
-    this.applyForce(totalForce);
+    avoidForce.mult(0.9);
+
+    this.applyForce(seekForce);
+    this.applyForce(avoidForce);
   }
 
   avoid(obstacles) {
@@ -53,7 +58,7 @@ class Vehicle {
     ahead.normalize();
     ahead.mult(100);
 
-    
+
     // on le dessine
     this.drawVector(this.pos, ahead, "lightblue");
 
@@ -79,7 +84,7 @@ class Vehicle {
 
     // si la distance est < rayon de l'obstacle
     // il y a collision possible et on dessine l'obstacle en rouge
-    if (distance < obstacleLePlusProche.r + this.largeurZoneEvitementDevantVaisseau) {
+    if (distance < obstacleLePlusProche.r + this.largeurZoneEvitementDevantVaisseau + this.r) {
       // collision possible
       obstacleLePlusProche.color = "red";
       // calcul de la force d'évitement. C'est un vecteur qui va
@@ -108,40 +113,44 @@ class Vehicle {
     donc deux zones d'évitement. On adapte aussi en plus ces vecteurs à la vitesse du véhicule
     Plus le véhicule va vite plus il regarde loin...
   */
-  avoidAmeliore(obstacles) {
+  avoidAmeliore(obstacles, vehicules) {
     // calcul d'un vecteur ahead devant le véhicule
     // il regarde par exemple 50 frames devant lui
     let ahead = this.vel.copy();
     ahead.normalize();
-    ahead.mult(100 * this.vel.mag()*0.4);
+    ahead.mult(100 * this.vel.mag() * 0.4);
 
     // Deuxième vecteur deux fois plus petit
     let ahead2 = ahead.copy();
     ahead2.mult(0.5);
 
     // on les dessine
-    this.drawVector(this.pos, ahead, "lightblue");
-    this.drawVector(this.pos, ahead2, "red");
+    if (Vehicle.debug) {
+      this.drawVector(this.pos, ahead, "lightblue");
+      this.drawVector(this.pos, ahead2, "red");
+    }
 
     // Detection de l'obstacle le plus proche
     let obstacleLePlusProche = this.getObstacleLePlusProche(obstacles);
+    let vehiculeLePlusProche = this.getVehiculeLePlusProche(vehicules);
 
     // On calcule la distance entre le cercle et le bout du vecteur ahead
     let pointAuBoutDeAhead = p5.Vector.add(this.pos, ahead);
     let pointAuBoutDeAhead2 = p5.Vector.add(this.pos, ahead2);
 
     // On dessine ce point pour debugger
-    fill("red");
-    noStroke();
-    circle(pointAuBoutDeAhead.x, pointAuBoutDeAhead.y, 10);
+    if (Vehicle.debug) {
+      fill("red");
+      noStroke();
+      circle(pointAuBoutDeAhead.x, pointAuBoutDeAhead.y, 10);
 
-    // On dessine la zone d'évitement
-    // On trace une ligne large qui va de la position du vaisseau
-    // jusqu'au point au bout de ahead
-    stroke(color(255, 200, 0, 90)); // gros, semi transparent
-    strokeWeight(this.largeurZoneEvitementDevantVaisseau);
-    line(this.pos.x, this.pos.y, pointAuBoutDeAhead.x, pointAuBoutDeAhead.y);
-
+      // On dessine la zone d'évitement
+      // On trace une ligne large qui va de la position du vaisseau
+      // jusqu'au point au bout de ahead
+      stroke(color(255, 200, 0, 90)); // gros, semi transparent
+      strokeWeight(this.largeurZoneEvitementDevantVaisseau);
+      line(this.pos.x, this.pos.y, pointAuBoutDeAhead.x, pointAuBoutDeAhead.y);
+    }
     let distance1 = pointAuBoutDeAhead.dist(obstacleLePlusProche.pos);
     let distance2 = pointAuBoutDeAhead2.dist(obstacleLePlusProche.pos);
     // on tient compte aussi de la position du vaisseau
@@ -152,18 +161,32 @@ class Vehicle {
 
     let pointDeReference;
 
-    if(distance1 < distance2) {
+    if (distance1 < distance2) {
       pointDeReference = pointAuBoutDeAhead;
     } else {
       pointDeReference = pointAuBoutDeAhead2;
     }
 
-    let alerteRougeVaisseauEnCollision = false;
-    if((distance3 < distance1) && (distance3 < distance2)) {
+    // alerte rouge que si vaisseau dans obstacle
+    let alerteRougeVaisseauEnCollision = (distance3 < obstacleLePlusProche.r);
+
+    if ((distance3 < distance1) && (distance3 < distance2)) {
       pointDeReference = this.pos;
       alerteRougeVaisseauEnCollision = true;
     }
 
+    if(!alerteRougeVaisseauEnCollision) {
+      // on peut éventuellement considérer le vehicule le plus proche
+      // comme l'obstacle à éviter, seulement s'il est plus proche
+      // que l'obstacle le plus proche
+      let distanceAvecVehiculeLePlusProche = this.pos.dist(vehiculeLePlusProche.pos);
+      let distanceAvecObstacleLePlusProche = distance3;
+      
+      if(distanceAvecVehiculeLePlusProche < distanceAvecObstacleLePlusProche) {
+        obstacleLePlusProche = vehiculeLePlusProche;
+        plusPetiteDistance = distanceAvecVehiculeLePlusProche;
+      }
+    }
     //console.log("distance = " + distance)
 
     // si la distance est < rayon de l'obstacle
@@ -174,9 +197,12 @@ class Vehicle {
       // calcul de la force d'évitement. C'est un vecteur qui va
       // du centre de l'obstacle vers le point au bout du vecteur ahead
       let force = p5.Vector.sub(pointDeReference, obstacleLePlusProche.pos);
-      // on le dessine pour vérifier qu'il est ok (dans le bon sens etc)
-      this.drawVector(obstacleLePlusProche.pos, force, "yellow");
 
+      if(Vehicle.debug) {
+        // on le dessine pour vérifier qu'il est ok (dans le bon sens etc)
+        this.drawVector(obstacleLePlusProche.pos, force, "yellow");
+      }
+    
       // Dessous c'est l'ETAPE 2 : le pilotage (comment on se dirige vers la cible)
       // on limite ce vecteur à la longueur maxSpeed
       force.setMag(this.maxSpeed);
@@ -185,8 +211,8 @@ class Vehicle {
       // on limite cette force à la longueur maxForce
       force.limit(this.maxForce);
 
-      if(alerteRougeVaisseauEnCollision) {
-        force.setMag(this.maxForce*2);
+      if (alerteRougeVaisseauEnCollision) {
+        force.setMag(this.maxForce * 2);
       }
       return force;
     } else {
@@ -202,7 +228,7 @@ class Vehicle {
     obstacles.forEach(o => {
       // Je calcule la distance entre le vaisseau et l'obstacle
       const distance = this.pos.dist(o.pos);
-      if(distance < plusPetiteDistance) {
+      if (distance < plusPetiteDistance) {
         plusPetiteDistance = distance;
         obstacleLePlusProche = o;
       }
@@ -210,7 +236,25 @@ class Vehicle {
 
     return obstacleLePlusProche;
   }
-  
+
+  getVehiculeLePlusProche(vehicules) {
+    let plusPetiteDistance = Infinity;
+    let vehiculeLePlusProche;
+
+    vehicules.forEach(v => {
+      if (v != this) {
+        // Je calcule la distance entre le vaisseau et le vehicule
+        const distance = this.pos.dist(v.pos);
+        if (distance < plusPetiteDistance) {
+          plusPetiteDistance = distance;
+          vehiculeLePlusProche = v;
+        }
+      }
+    });
+
+    return vehiculeLePlusProche;
+  }
+
 
   getClosestObstacle(pos, obstacles) {
     // on parcourt les obstacles et on renvoie celui qui est le plus près du véhicule
@@ -310,13 +354,18 @@ class Vehicle {
     rotate(this.vel.heading());
 
     // Dessin d'un véhicule sous la forme d'un triangle. Comme s'il était droit, avec le 0, 0 en haut à gauche
-    triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+    triangle(-this.r_pourDessin, -this.r_pourDessin / 2, -this.r_pourDessin, this.r_pourDessin / 2, this.r_pourDessin, 0);
     // Que fait cette ligne ?
     //this.edges();
 
     // draw velocity vector
     pop();
     this.drawVector(this.pos, this.vel, color(255, 0, 0));
+
+    // Cercle pour évitement entre vehicules et obstacles
+    stroke(255);
+    noFill();
+    circle(this.pos.x, this.pos.y, this.r);
   }
 
   drawVector(pos, v, color) {

@@ -1,15 +1,20 @@
-let pursuer;
+let pursuer1, pursuer2;
 let target;
 let obstacles = [];
+let vehicules = [];
 
 function setup() {
-  createCanvas(800, 800);
-  pursuer = new Vehicle(100, 100);
+  createCanvas(windowWidth, windowHeight);
+  pursuer1 = new Vehicle(100, 100);
+  pursuer2 = new Vehicle(random(width), random(height));
+
+  vehicules.push(pursuer1);
+  vehicules.push(pursuer2);
 
   // On cree un obstalce au milieu de l'écran
   // un cercle de rayon 100px
   // TODO
-  obstacle = new Obstacle(width/2, height/2, 100);
+  obstacle = new Obstacle(width / 2, height / 2, 100);
   obstacles.push(obstacle);
 }
 
@@ -30,16 +35,26 @@ function draw() {
     o.show();
   })
 
-  // pursuer = le véhicule poursuiveur, il vise un point devant la cible
-  let steering = pursuer.applyBehaviors(target, obstacles);
-  pursuer.applyForce(steering);
+  vehicules.forEach(v => {
+    // pursuer = le véhicule poursuiveur, il vise un point devant la cible
+    v.applyBehaviors(target, obstacles, vehicules);
 
-  // déplacement et dessin du véhicule et de la target
-  pursuer.update();
-  pursuer.show();
+    // déplacement et dessin du véhicule et de la target
+    v.update();
+    v.show();
+  });
 }
 
 function mousePressed() {
   obstacle = new Obstacle(mouseX, mouseY, random(5, 60));
   obstacles.push(obstacle);
+}
+
+function keyPressed() {
+  if (key == "v") {
+    vehicules.push(new Vehicle(random(width), random(height)));
+  }
+  if (key == "d") {
+    Vehicle.debug = !Vehicle.debug;
+  }
 }
