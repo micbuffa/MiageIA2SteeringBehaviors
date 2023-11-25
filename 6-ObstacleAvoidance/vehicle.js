@@ -28,6 +28,9 @@ class Vehicle {
     this.maxSpeed = 6;
     // force maximale appliquée au véhicule
     this.maxForce = 0.9;
+    this.color = "white";
+    // à peu près en secondes
+    this.dureeDeVie = 5;
 
     this.r_pourDessin = 8;
     // rayon du véhicule pour l'évitement
@@ -35,11 +38,16 @@ class Vehicle {
 
     // Pour évitement d'obstacle
     this.largeurZoneEvitementDevantVaisseau = this.r / 2;
+
+    // chemin derrière vaisseaux
+    this.path = [];
+    this.pathMaxLength = 30;
   }
 
   // on fait une méthode applyBehaviors qui applique les comportements
   // seek et avoid
   applyBehaviors(target, obstacles) {
+
     let seekForce = this.arrive(target);
     let avoidForce = this.avoidAmeliore(obstacles, vehicules);
     //let avoidForce = this.avoidAmeliore(obstacles);
@@ -155,41 +163,45 @@ class Vehicle {
     let distance2 = pointAuBoutDeAhead2.dist(obstacleLePlusProche.pos);
     // on tient compte aussi de la position du vaisseau
     let distance3 = this.pos.dist(obstacleLePlusProche.pos);
+    let distance4 = Infinity;
+    if(vehiculeLePlusProche) {
+      distance4 = this.pos.dist(vehiculeLePlusProche.pos);
+    } 
 
     let plusPetiteDistance = min(distance1, distance2);
     plusPetiteDistance = min(plusPetiteDistance, distance3)
 
-    let pointDeReference;
+    // la plus petite distance est bien celle par rapport à l'obstacle
+    // le plus proche
 
+    // point de référence = point au bout de ahead, de ahead2 ou pos
+    let pointDeReference;
     if (distance1 < distance2) {
       pointDeReference = pointAuBoutDeAhead;
     } else {
       pointDeReference = pointAuBoutDeAhead2;
     }
-
-    // alerte rouge que si vaisseau dans obstacle
-    let alerteRougeVaisseauEnCollision = (distance3 < obstacleLePlusProche.r);
-
     if ((distance3 < distance1) && (distance3 < distance2)) {
       pointDeReference = this.pos;
-      alerteRougeVaisseauEnCollision = true;
     }
+    // alerte rouge que si vaisseau dans obstacle
+    let alerteRougeVaisseauEnCollisionAvecObstacleLePlusProche = (distance3 < obstacleLePlusProche.r);
 
-    if(!alerteRougeVaisseauEnCollision) {
-      // on peut éventuellement considérer le vehicule le plus proche
-      // comme l'obstacle à éviter, seulement s'il est plus proche
-      // que l'obstacle le plus proche
-      let distanceAvecVehiculeLePlusProche = this.pos.dist(vehiculeLePlusProche.pos);
+    // Si le vaisseau n'est pas dans l'obstacle
+    // on peut éventuellement considérer le vehicule le plus proche
+    // comme l'obstacle à éviter, seulement s'il est plus proche
+    // que l'obstacle le plus proche
+    if (!alerteRougeVaisseauEnCollisionAvecObstacleLePlusProche) {
+      let distanceAvecVehiculeLePlusProche = distance4;
       let distanceAvecObstacleLePlusProche = distance3;
-      
-      if(distanceAvecVehiculeLePlusProche < distanceAvecObstacleLePlusProche) {
+
+      if (distanceAvecVehiculeLePlusProche < distanceAvecObstacleLePlusProche) {
         obstacleLePlusProche = vehiculeLePlusProche;
         plusPetiteDistance = distanceAvecVehiculeLePlusProche;
       }
     }
-    //console.log("distance = " + distance)
 
-    // si la distance est < rayon de l'obstacle
+    // si la distance est < rayon de l'obstacle le plus proche
     // il y a collision possible et on dessine l'obstacle en rouge
     if (plusPetiteDistance < obstacleLePlusProche.r + this.largeurZoneEvitementDevantVaisseau) {
       // collision possible
@@ -198,11 +210,11 @@ class Vehicle {
       // du centre de l'obstacle vers le point au bout du vecteur ahead
       let force = p5.Vector.sub(pointDeReference, obstacleLePlusProche.pos);
 
-      if(Vehicle.debug) {
+      if (Vehicle.debug) {
         // on le dessine pour vérifier qu'il est ok (dans le bon sens etc)
         this.drawVector(obstacleLePlusProche.pos, force, "yellow");
       }
-    
+
       // Dessous c'est l'ETAPE 2 : le pilotage (comment on se dirige vers la cible)
       // on limite ce vecteur à la longueur maxSpeed
       force.setMag(this.maxSpeed);
@@ -211,7 +223,7 @@ class Vehicle {
       // on limite cette force à la longueur maxForce
       force.limit(this.maxForce);
 
-      if (alerteRougeVaisseauEnCollision) {
+      if (alerteRougeVaisseauEnCollisionAvecObstacleLePlusProche) {
         force.setMag(this.maxForce * 2);
       }
       return force;
@@ -333,17 +345,40 @@ class Vehicle {
 
     // on remet l'accélération à zéro
     this.acc.set(0, 0);
+
+    // mise à jour du path (la trainée derrière)
+    this.ajoutePosAuPath();
+
+    // durée de vie
+    this.dureeDeVie -= 0.01;
   }
 
-  // On dessine le véhicule
+  ajoutePosAuPath() {
+    // on rajoute la position courante dans le tableau
+    this.path.push(this.pos.copy());
+
+    // si le tableau a plus de 50 éléments, on vire le plus ancien
+    if (this.path.length > this.pathMaxLength) {
+      this.path.shift();
+    }
+  }
+
+  // On dessine le véhicule, le chemin etc.
   show() {
+    // dessin du chemin
+    this.drawPath();
+    // dessin du vehicule
+    this.drawVehicle();
+  }
+
+  drawVehicle() {
     // formes fil de fer en blanc
     stroke(255);
     // épaisseur du trait = 2
     strokeWeight(2);
 
-    // formes pleines en blanc
-    fill(255);
+    // formes pleines
+    fill(this.color);
 
     // sauvegarde du contexte graphique (couleur pleine, fil de fer, épaisseur du trait, 
     // position et rotation du repère de référence)
@@ -363,11 +398,29 @@ class Vehicle {
     this.drawVector(this.pos, this.vel, color(255, 0, 0));
 
     // Cercle pour évitement entre vehicules et obstacles
-    stroke(255);
-    noFill();
-    circle(this.pos.x, this.pos.y, this.r);
+    if(Vehicle.debug) {
+      stroke(255);
+      noFill();
+      circle(this.pos.x, this.pos.y, this.r);
+    }
   }
 
+  drawPath() {
+    push();
+    stroke(255);
+    noFill();
+    strokeWeight(1);
+
+    fill(this.color);
+    // dessin du chemin
+    this.path.forEach((p, index) => {
+      if (!(index % 5)) {
+       
+        circle(p.x, p.y, 1);
+      }
+    });
+    pop();
+  }
   drawVector(pos, v, color) {
     push();
     // Dessin du vecteur vitesse

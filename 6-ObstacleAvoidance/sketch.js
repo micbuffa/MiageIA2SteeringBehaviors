@@ -19,7 +19,8 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  // changer le dernier param (< 100) pour effets de trainée
+  background(0, 0, 0, 100);
 
   target = createVector(mouseX, mouseY);
 
@@ -42,6 +43,15 @@ function draw() {
     // déplacement et dessin du véhicule et de la target
     v.update();
     v.show();
+
+    // On s'amuse à donner une durée de vie
+    /*
+    console.log(v.dureeDeVie)
+    if(v.dureeDeVie <= 0) {
+      // on supprime le véhicule du tableau
+      vehicules = vehicules.filter(vehicle => vehicle.dureeDeVie <= 0);
+    }
+    */
   });
 }
 
@@ -56,5 +66,18 @@ function keyPressed() {
   }
   if (key == "d") {
     Vehicle.debug = !Vehicle.debug;
+  }
+
+  if (key == "f") {
+    const nbMissiles = 10;
+
+    // On tire des missiles !
+    for(let i=0; i < nbMissiles; i++) {
+      let x = 20+random(10);
+      let y = random(height/2-5, random(height/2+5));
+
+      let v = new Vehicle(x, y);
+      vehicules.push(v);
+    }
   }
 }
