@@ -36,7 +36,6 @@ class Vehicle {
   // on fait une méthode applyBehaviors qui applique les comportements
   // seek et avoid
   applyBehaviors(target, obstacles) {
-    // TODO quand l'évitement d'obstacles marchera : ajouter une force de séparation entre véhicules...
     let seekForce = this.arrive(target);
     let avoidForce = this.avoidAmeliore(obstacles);
     //let avoidForce = this.avoidAmeliore(obstacles);
