@@ -15,8 +15,8 @@ class Vehicle {
   }
 
   applyBehaviors(target) {
-    let force1 = this.seek(target);
-    this.applyForce(force1);
+    let force = this.seek(target);
+    this.applyForce(force);
   }
   // seek est une méthode qui permet de faire se rapprocher le véhicule de la cible passée en paramètre
   seek(target) {
@@ -27,9 +27,12 @@ class Vehicle {
     // Dessous c'est l'ETAPE 2 : le pilotage (comment on se dirige vers la cible)
     // on limite ce vecteur à la longueur maxSpeed
     force.setMag(this.maxSpeed);
-    // on calcule la force à appliquer pour atteindre la cible
+
+    // Si on s'arrête ici, force = desiredSpeed
+
+    // on calcule maintenant force = desiredSpeed - currentSpeed
     force.sub(this.vel);
-    // on limite cette force à la longueur maxForce
+    // et on limite cette force à la longueur maxForce
     force.limit(this.maxForce);
     return force;
   }

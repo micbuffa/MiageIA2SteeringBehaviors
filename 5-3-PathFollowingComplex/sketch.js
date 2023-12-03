@@ -41,16 +41,10 @@ function draw() {
   path.display();
 
   for (let v of vehicles) {
-    if (v.couleur == "green") {
-      // cas particulier d'un déambulateur :-)
-      v.wander();
-      v.edges();
-    } else {
-      // On applique les comportements pour suivre le chemin
-      v.applyBehaviors(vehicles, path);
-    }
-     // on a regroupé update, draw etc. dans une méthode run (update, borders, display, etc.)
-     v.run();
+    // On applique les comportements pour suivre le chemin
+    v.applyBehaviors(vehicles, path);
+    // on a regroupé update, draw etc. dans une méthode run (update, borders, display, etc.)
+    v.run();
   }
 }
 
@@ -76,16 +70,6 @@ function newVehicle(x, y) {
 function keyPressed() {
   if (key == "d") {
     debug = !debug;
-  } else if (key == "s") {
-    let v = newVehicle(mouseX, mouseY);
-    v.maxspeed = 8;
-    v.maxForce = 0.5;
-    v.r = 15
-    v.couleur = "red";
-  } else if (key == "w") {
-    v = newVehicle(mouseX, mouseY);
-    v.couleur = "green";
-    v.r = 40;
   }
 }
 

@@ -31,7 +31,7 @@ class Vehicle {
   }
 
   flee(target) {
-    return this.seek(target).mult(-1);
+    // recopier code de flee de l'exemple précédent
   }
 
   seek(target, arrival = false) {
@@ -50,35 +50,16 @@ class Vehicle {
       // entre nouvelleValeurMin et nouvelleValeurMax
 
       // TODO !
-      
-      let rayon = this.rayonZoneDeFreinage;
-      // 0 - ceci est un test, on essaye de faire varier la taille
-      // de la zone de freinage en fonction de la vitesse
-      //rayon = rayon * this.vel.mag() * 0.25;
-      //rayon = max(50, rayon);
 
       // 1 - dessiner le cercle de rayon 100 autour du véhicule
-      noFill();
 
-      // pour effet psychedelique, décommenter la ligne suivante, 
-      // commenter celle d'après
-      //stroke(random(255), random(255), random(255));
-      stroke(255);
-      
-      //strokeWeight(10);
-      circle(this.pos.x, this.pos.y, rayon);
-      
       // 2 - calcul de la distance entre la cible et le véhicule
-      let distance = p5.Vector.dist(this.pos, target);
 
       // 3 - si distance < rayon du cercle, alors on modifie desiredSPeed
       // qui devient inversement proportionnelle à la distance.
       // si d = rayon alors desiredSpeed = maxSpeed
       // si d = 0 alors desiredSpeed = 0
 
-      if(distance < rayon) {
-        desiredSpeed = map(distance, 0, rayon, 0, this.maxSpeed);
-      }
     }
 
     force.setMag(desiredSpeed);
