@@ -1,8 +1,18 @@
-let vehicle;
+const nbVehicles = 10;
+let vehicles = [];
 
 function setup() {
   createCanvas(800, 800);
-  vehicle = new Vehicle(100, 100);
+
+  createVehicles(nbVehicles);
+}
+
+function createVehicles(nbVehicles) {
+  for (let i = 0; i < nbVehicles; i++) {
+    let x = random(width);
+    let y = random(height);
+    vehicles.push(new Vehicle(x, y));
+  }
 }
 
 function draw() {
@@ -17,13 +27,34 @@ function draw() {
   noStroke();
   ellipse(target.x, target.y, 32);
 
-  // comportement arrive
-  let steering = vehicle.arrive(target);
 
-  // On applique la force au véhicule
-  vehicle.applyForce(steering);
+  // on parcourt le tableau des véhicules
+  vehicles.forEach((vehicle, index) => {
+    let steering;
 
-  // On met à jour la position et on dessine le véhicule
-  vehicle.update();
-  vehicle.show();
+    if (index === 0) {
+      // 1er véhicule
+      // comportement arrive normal
+     steering = vehicle.arrive(target);
+    } else {
+      // Pour les autres.....
+      let newTarget = vehicles[index - 1].pos;
+      // le dernier paramètre est la distance derrière le véhicule
+      // précédent
+      steering = vehicle.arrive(newTarget, 40);
+    }
+
+    // On applique la force au véhicule
+    vehicle.applyForce(steering);
+
+    // On met à jour la position et on dessine le véhicule
+    vehicle.update();
+    vehicle.show();
+  });
+}
+
+function keyPressed() {
+  if (key === 'd') {
+    Vehicle.debug = ! Vehicle.debug;
+  }
 }
