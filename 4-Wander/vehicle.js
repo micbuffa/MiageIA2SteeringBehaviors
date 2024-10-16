@@ -9,6 +9,8 @@ class Vehicle {
 
 
     // pour comportement wander
+    this.distanceCercle = 150;
+    this.wanderRadius = 50;
     this.wanderTheta = PI / 2;
     this.displaceRange = 0.3;
 
@@ -18,7 +20,7 @@ class Vehicle {
   wander() {
     // point devant le véhicule
     let wanderPoint = this.vel.copy();
-    wanderPoint.setMag(100);
+    wanderPoint.setMag(this.distanceCercle);
     wanderPoint.add(this.pos);
 
     // on le dessine sous la forme d'une petit cercle rouge
@@ -27,12 +29,11 @@ class Vehicle {
     circle(wanderPoint.x, wanderPoint.y, 8);
 
     // Cercle autour du point
-    let wanderRadius = 50;
     noFill();
     stroke(255);
-    circle(wanderPoint.x, wanderPoint.y, wanderRadius * 2);
+    circle(wanderPoint.x, wanderPoint.y, this.wanderRadius * 2);
 
-    // on dessine une lign qui relie le vaisseau à ce point
+    // on dessine une ligne qui relie le vaisseau à ce point
     // c'est la ligne blanche en face du vaisseau
     line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
 
@@ -42,8 +43,8 @@ class Vehicle {
     // + cet angle
     let theta = this.wanderTheta + this.vel.heading();
 
-    let x = wanderRadius * cos(theta);
-    let y = wanderRadius * sin(theta);
+    let x = this.wanderRadius * cos(theta);
+    let y = this.wanderRadius * sin(theta);
 
     // maintenant wanderPoint c'est un point sur le cercle
     wanderPoint.add(x, y);
@@ -53,20 +54,23 @@ class Vehicle {
     noStroke();
     circle(wanderPoint.x, wanderPoint.y, 16);
 
-    // on dessine le vecteur desiredSpeed qui va du vaisseau au poibnt vert
-    //stroke(255);
+    // on dessine le vecteur desiredSpeed qui va du vaisseau au point vert
+    stroke(255);
     line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
 
     // On a donc la vitesse désirée que l'on cherche qui est le vecteur
     // allant du vaisseau au cercle vert. On le calcule :
     // ci-dessous, steer c'est la desiredSpeed directement !
+    // Voir l'article de Craig Reynolds, Daniel Shiffman s'est trompé
+    // dans sa vidéo, on ne calcule pas la formule classique
+    // force = desiredSpeed - vitesseCourante, mais ici on a directement
+    // force = desiredSpeed
     let steer = wanderPoint.sub(this.pos);
 
     steer.setMag(this.maxForce);
     this.applyForce(steer);
 
     // On déplace le point vert sur le cerlcle (en radians)
-    this.displaceRange = 0.3;
     this.wanderTheta += random(-this.displaceRange, this.displaceRange);
   }
 
