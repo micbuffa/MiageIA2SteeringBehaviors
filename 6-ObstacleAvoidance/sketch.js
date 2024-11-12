@@ -9,11 +9,12 @@ function setup() {
   pursuer2 = new Vehicle(random(width), random(height));
 
   vehicules.push(pursuer1);
-  vehicules.push(pursuer2);
+  //vehicules.push(pursuer2);
 
   // On cree un obstace au milieu de l'écran
   // un cercle de rayon 100px
   // TODO
+  obstacles.push(new Obstacle(width / 2, height / 2, 100));
 }
 
 function draw() {
@@ -46,6 +47,7 @@ function draw() {
 
 function mousePressed() {
   // TODO : ajouter un obstacle de taille aléatoire à la position de la souris
+  obstacles.push(new Obstacle(mouseX, mouseY, random(20, 100)));
 }
 
 function keyPressed() {
@@ -54,5 +56,14 @@ function keyPressed() {
   }
   if (key == "d") {
     Vehicle.debug = !Vehicle.debug;
+  } else if (key == "f") {
+    // on crée 10 véhicules à des position random espacées de 50px
+    // en x = 20, y = hauteur du  canvas sur deux
+    for (let i = 0; i < 10; i++) {
+      let v = new Vehicle(20, 300 )
+      // vitesse aléatoire
+      v.vel = new p5.Vector(random(1, 5), random(1, 5));
+      vehicules.push(v);
+    }
   }
 }
