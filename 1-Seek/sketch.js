@@ -1,12 +1,14 @@
 let target, vehicle;
 let vehicule;
+let vitesseMaxSlider, accelerationMaxSlider;
+let vehicles = [];
 
 // la fonction setup est appelée une fois au démarrage du programme par p5.js
 function setup() {
   // on crée un canvas de 800px par 800px
   createCanvas(800, 800);
 
-  vehicle = new Vehicle(100, 100);
+  creerDesVehicules(10);
 
   // TODO: créer un tableau de véhicules en global
   // ajouter nb vehicules au tableau dans une boucle
@@ -14,7 +16,33 @@ function setup() {
 
   // La cible est un vecteur avec une position aléatoire dans le canvas
   target = createVector(random(width), random(height));
-  
+
+  // On crée des sliders pour la vitesse max et l'accélération max
+  // params = min, max, valeur, pas
+  vitesseMaxSlider = createSlider(1, 20, 10, 1);
+  vitesseMaxSlider.position(920, 10);
+  vitesseMaxSlider.size(80);
+  // je crée un label juste devant en X
+  let labelVitesseMax = createDiv('Vitesse Max:')
+  labelVitesseMax.position(810, 10);
+  labelVitesseMax.style('color', 'black');
+  labelVitesseMax.style('font-size', '14px');
+
+  accelerationMaxSlider = createSlider(0.1, 2, 0.25, 0.01);
+  accelerationMaxSlider.position(920, 40);
+  accelerationMaxSlider.size(80);
+  // je crée un label juste devant en X
+  let labelAccelerationMax = createDiv('Accélération Max:')
+  labelAccelerationMax.position(810, 40);
+  labelAccelerationMax.style('color', 'black');
+  labelAccelerationMax.style('font-size', '14px');
+}
+
+function creerDesVehicules(nb) {
+  for (let i = 0; i < nb; i++) {
+    let v = new Vehicle(random(width), random(height));
+    vehicles.push(v);
+  }
 }
 
 // la fonction draw est appelée en boucle par p5.js, 60 fois par seconde par défaut
@@ -40,11 +68,31 @@ function draw() {
   // pas de contours car on a appelé noStroke() plus haut
   circle(target.x, target.y, 32);
 
-  // je déplace et dessine le véhicule
+  vehicles.forEach(vehicle => {
+    // Je regarde la valeur des sliders pour la vitesse max
+    // et l'accélération max
+    vehicle.maxSpeed = vitesseMaxSlider.value();
+    vehicle.maxForce = accelerationMaxSlider.value();
+
+    // je déplace et dessine le véhicule
     vehicle.applyBehaviors(target);
     vehicle.update();
+    // Si le vehicule sort de l'écran
+    // on le fait réapparaitre de l'autre côté
+    vehicle.edges();
     vehicle.show();
 
-    // TODO: boucle sur le tableau de véhicules
+    // On regarde si il y a collision entre le véhicule et la cible
+    // On calcule la distance entre la cible et le véhicule
+    const dist = p5.Vector.dist(vehicle.pos, target);
+    if (dist < (vehicle.r + 16)) {
+      // il y a collision, on fait réapparaitre
+      // le véhicule aléatoirement ailleurs dans l'écran
+      vehicle.pos.x = random(width);
+      vehicle.pos.y = random(height);
+    }
+
+  })
+  // TODO: boucle sur le tableau de véhicules
   // pour chaque véhicule : seek, update, show
 }

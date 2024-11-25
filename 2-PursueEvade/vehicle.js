@@ -44,7 +44,7 @@ class Vehicle {
   pursue(target) {
     // TODO
     // 1 - calcul de la position future de la cible
-    // on fait une copie de la position de la target
+    // on fait une copie de la vitesse de la target
     // 2 - On calcule un vecteur colinéaire au vecteur vitesse de la cible,
     let prediction = target.vel.copy();
     // et on le multiplie par 10 (10 frames)
@@ -129,7 +129,7 @@ class Vehicle {
     push();
     // Dessin du vecteur depuis pos comme origne
     strokeWeight(3);
-    stroke(255, 0, 0);
+    stroke("red");
     line(pos.x, pos.y, pos.x + v.x, pos.y + v.y);
     // dessine une petite fleche au bout du vecteur vitesse
     let arrowSize = 5;

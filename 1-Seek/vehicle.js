@@ -16,6 +16,7 @@ class Vehicle {
 
   applyBehaviors(target) {
     let force = this.seek(target);
+    //let force = this.flee(target);
     this.applyForce(force);
   }
   // seek est une méthode qui permet de faire se rapprocher le véhicule de la cible passée en paramètre
@@ -70,7 +71,7 @@ class Vehicle {
     strokeWeight(2);
 
     // formes pleines en blanc
-    fill(255);
+    fill("blue");
 
     // sauvegarde du contexte graphique (couleur pleine, fil de fer, épaisseur du trait, 
     // position et rotation du repère de référence)
@@ -80,11 +81,13 @@ class Vehicle {
     // et on le tourne. heading() renvoie l'angle du vecteur vitesse (c'est l'angle du véhicule)
     rotate(this.vel.heading());
 
+    //circle(0, 0, this.r * 2);
+
     // Dessin d'un véhicule sous la forme d'un triangle. Comme s'il était droit, avec le 0, 0 en haut à gauche
     triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
     // Que fait cette ligne ?
     //this.edges();
-
+    
     // draw velocity vector
     pop();
     this.drawVelocityVector();
@@ -95,7 +98,7 @@ class Vehicle {
     // Dessin du vecteur vitesse
     // Il part du centre du véhicule et va dans la direction du vecteur vitesse
     strokeWeight(3);
-    stroke(255, 0, 0);
+    stroke("red");
     line(this.pos.x, this.pos.y, this.pos.x + this.vel.x * 10, this.pos.y + this.vel.y * 10);
     // dessine une petite fleche au bout du vecteur vitesse
     let arrowSize = 5;
