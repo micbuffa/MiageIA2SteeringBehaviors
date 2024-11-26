@@ -62,6 +62,48 @@ class Vehicle {
   }
 
   avoid(obstacles) {
+    // TODO
+     // calcul d'un vecteur ahead devant le véhicule
+    // il regarde par exemple 50 frames devant lui
+
+    // on le dessine avec ma méthode this.drawVector(pos vecteur, color)
+
+    // Calcul des coordonnées du point au bout de ahead
+
+    // Detection de l'obstacle le plus proche
+
+    // Si pas d'obstacle, on renvoie un vecteur nul
+
+    // On calcule la distance entre le cercle et le bout du vecteur ahead
+
+     // On dessine avec un cercle le point au bout du vecteur ahead pour debugger
+
+    // On dessine la zone d'évitement
+    // Pour cela on trace une ligne large qui va de la position du vaisseau
+    // jusqu'au point au bout de ahead
+
+    // si la distance est < rayon de l'obstacle
+    // il y a collision possible et on dessine l'obstacle en rouge
+
+        // calcul de la force d'évitement. C'est un vecteur qui va
+        // du centre de l'obstacle vers le point au bout du vecteur ahead
+
+        // on le dessine en jaune pour vérifier qu'il est ok (dans le bon sens etc)
+
+        // Dessous c'est l'ETAPE 2 : le pilotage (comment on se dirige vers la cible)
+      // on limite ce vecteur à la longueur maxSpeed
+      // force est la vitesse désirée
+      // enlever les commentaires
+      //force.setMag(this.maxSpeed);
+      // on calcule la force à appliquer pour atteindre la cible avec la formule
+      // que vous commencez à connaitre : force = vitesse désirée - vitesse courante
+      //force.sub(this.vel);
+      // on limite cette force à la longueur maxForce
+      //force.limit(this.maxForce);
+
+  }
+
+  avoidCorrige(obstacles) {
     // calcul d'un vecteur ahead devant le véhicule
     // il regarde par exemple 50 frames devant lui
     let ahead = this.vel.copy();

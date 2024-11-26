@@ -29,14 +29,55 @@ class Vehicle {
 
   arrive(target, d = 0) {
     // 2nd argument true enables the arrival behavior
-    return this.seek(target, true, d);
+    // 3rd argumlent d is the distance behind the target
+    // for "snake" behavior
+    return this.seek(target, true , d);
   }
 
   flee(target) {
     // recopier code de flee de l'exemple précédent
   }
 
-  seek(target, arrival = false, d) {
+  // TODO : modifier pour ajouter un 3ème paramètre d
+  // qui dira à quelle distance derrière le véhicule on doit s'arrêter
+  // si d=0 c'est le comportement arrival normal
+  seek(target, arrival) {
+    let force = p5.Vector.sub(target, this.pos);
+    let desiredSpeed = this.maxSpeed;
+
+    if(arrival) {
+      // on dessine un cercle de rayon 100 
+      // centré sur le point d'arrivée
+
+      noFill();
+      stroke("white")
+      circle(target.x, target.y, this.rayonZoneDeFreinage)
+
+      // on calcule la distance du véhicule
+      // par rapport au centre du cercle
+      const dist = p5.Vector.dist(this.pos, target);
+      
+      if(dist < this.rayonZoneDeFreinage) {
+        // on va diminuer de manière proportionnelle à
+        // la distance, la vitesse
+        // on va utiliser la fonction map(...) de P5
+        // qui permet de modifier une valeur dans un 
+        // intervalle initial, vers la même valeur dans un
+        // autre intervalle
+        // newVal = map(value, start1, stop1, start2, stop2, [withinBounds])
+        desiredSpeed = map(dist, 0, this.rayonZoneDeFreinage, 0, this.maxSpeed)
+      }
+    }
+
+    // equation force = vitesseDesiree - vitesseActuelle
+    force.setMag(desiredSpeed);
+    force.sub(this.vel);
+    // et on limite la force
+    force.limit(this.maxForce);
+    return force;
+  }
+
+  seekCorrectionSnake(target, arrival = false, d) {
     let force = p5.Vector.sub(target, this.pos);
     let desiredSpeed = this.maxSpeed;
 
@@ -50,8 +91,6 @@ class Vehicle {
       // distance = map(valeur, valeurMin, valeurMax, nouvelleValeurMin, nouvelleValeurMax)
       // qui prend une valeur entre valeurMin et valeurMax et la transforme en une valeur
       // entre nouvelleValeurMin et nouvelleValeurMax
-
-      // TODO !
 
       // 1 - dessiner le cercle de rayon 100 autour de la target
       if (Vehicle.debug) {
