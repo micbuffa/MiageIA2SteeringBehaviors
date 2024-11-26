@@ -1,11 +1,13 @@
 class Vehicle {
-  constructor(x, y) {
+  constructor(x, y, image) {
     this.pos = createVector(x, y);
     this.vel = createVector(1, 0);
     this.acc = createVector(0, 0);
     this.maxSpeed = 4;
     this.maxForce = 0.2;
-    this.r = 16;
+    this.r = 46;
+    // sprite image du véhicule
+    this.image = image;
 
 
     // pour comportement wander
@@ -18,7 +20,7 @@ class Vehicle {
   }
 
   wander() {
-    // point devant le véhicule
+    // point devant le véhicule, centre du cercle
     let wanderPoint = this.vel.copy();
     wanderPoint.setMag(this.distanceCercle);
     wanderPoint.add(this.pos);
@@ -130,6 +132,9 @@ class Vehicle {
 
     // si le tableau a plus de 50 éléments, on vire le plus ancien
     // TODO
+    if (this.path.length > 50) {
+      this.path.shift();
+    }
 
   }
 
@@ -144,7 +149,8 @@ class Vehicle {
     });
 
     // dessin du vaisseau
-    console.log("show")
+    /*
+    //console.log("show")
     stroke(255);
     strokeWeight(2);
     fill(255);
@@ -152,6 +158,15 @@ class Vehicle {
     translate(this.pos.x, this.pos.y);
     rotate(this.vel.heading());
     triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+    pop();
+    */
+
+    // dessin du vaisseau avec image
+    push();
+    translate(this.pos.x, this.pos.y);
+    rotate(this.vel.heading()-PI/2);
+    imageMode(CENTER);
+    image(this.image, 0, 0, this.r * 2, this.r * 2);
     pop();
 
 
