@@ -52,5 +52,5 @@ function draw() {
 
   fill(0, 255, 0);
   noStroke();
-  // circle(pos.x, pos.y, 16);
+  circle(pos.x, pos.y, 16);
 }

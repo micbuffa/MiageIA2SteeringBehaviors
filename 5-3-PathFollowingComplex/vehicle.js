@@ -11,6 +11,8 @@
 // Vehicle class
 
 class Vehicle {
+    static debug = false;
+
   // Constructor initialize all values
   constructor(x, y, ms, mf) {
     this.position = createVector(x, y);
@@ -21,7 +23,19 @@ class Vehicle {
     this.velocity = createVector(this.maxspeed, 0);
     this.couleur = "black";
 
-    this.path = [];
+    this.wanderWeight = 0;
+    this.followPathWeight = 2;
+    this.separateWeight = 0;
+
+     // pour comportement wander
+     this.distanceCercle = 250;
+     this.wanderRadius = 60;
+     this.wanderTheta = PI/2;
+     this.displaceRange = random(-0.3, 0.3);
+ 
+     // trainée derrière les véhicules
+     this.pathMaxLength = 20;
+     this.path = [];
   }
 
   // Implémente deux comportements : suivi de chemin complexe et séparation
@@ -31,12 +45,17 @@ class Vehicle {
     let f = this.follow(path);
     // separation des autres véhicules, le resultat est la force s
     let s = this.separate(vehicles);
+    let w = this.wander();
+
     // On fait une somme pondérée des deux forces
-    f.mult(2);
-    s.mult(3); // essayez zéro ici !!!!
+    f.mult(this.followPathWeight);
+    s.mult(this.separateWeight); // essayez zéro ici !!!!
+    w.mult(this.wanderWeight);
+
     // On applique les forces au véhicule
     this.applyForce(f);
     this.applyForce(s);
+    this.applyForce(w);
   }
 
   applyForce(force) {
@@ -188,6 +207,69 @@ class Vehicle {
     }
     return steer;
   }
+
+  wander() {
+    // point devant le véhicule, centre du cercle
+    let wanderPoint = this.velocity.copy();
+    wanderPoint.setMag(this.distanceCercle);
+    wanderPoint.add(this.position);
+
+    if (Vehicle.debug) {
+      // on le dessine sous la forme d'une petit cercle rouge
+      fill(255, 0, 0);
+      noStroke();
+      circle(wanderPoint.x, wanderPoint.y, 8);
+
+      // Cercle autour du point
+      noFill();
+      stroke(0);
+      circle(wanderPoint.x, wanderPoint.y, this.wanderRadius * 2);
+
+      // on dessine une ligne qui relie le vaisseau à ce point
+      // c'est la ligne blanche en face du vaisseau
+      line(this.position.x, this.position.y, wanderPoint.x, wanderPoint.y);
+    }
+
+    // On va s'occuper de calculer le point vert SUR LE CERCLE
+    // il fait un angle wanderTheta avec le centre du cercle
+    // l'angle final par rapport à l'axe des X c'est l'angle du vaisseau
+    // + cet angle
+    let theta = this.wanderTheta + this.velocity.heading();
+
+    let x = this.wanderRadius * cos(theta);
+    let y = this.wanderRadius * sin(theta);
+
+    // maintenant wanderPoint c'est un point sur le cercle
+    wanderPoint.add(x, y);
+
+    if (Vehicle.debug) {
+      // on le dessine sous la forme d'un cercle vert
+      fill(0, 255, 0);
+      noStroke();
+      circle(wanderPoint.x, wanderPoint.y, 16);
+
+      // on dessine le vecteur desiredSpeed qui va du vaisseau au point vert
+      stroke(0);
+      line(this.position.x, this.position.y, wanderPoint.x, wanderPoint.y);
+    }
+    // On a donc la vitesse désirée que l'on cherche qui est le vecteur
+    // allant du vaisseau au cercle vert. On le calcule :
+    // ci-dessous, steer c'est la desiredSpeed directement !
+    // Voir l'article de Craig Reynolds, Daniel Shiffman s'est trompé
+    // dans sa vidéo, on ne calcule pas la formule classique
+    // force = desiredSpeed - vitesseCourante, mais ici on a directement
+    // force = desiredSpeed
+    let steer = wanderPoint.sub(this.position);
+
+    steer.setMag(this.maxforce);
+    
+
+    // On déplace le point vert sur le cerlcle (en radians)
+    this.wanderTheta += random(-this.displaceRange, this.displaceRange);
+
+    return steer;
+  }
+
 
   // Method to update position
   update() {

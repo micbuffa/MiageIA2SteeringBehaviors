@@ -32,7 +32,7 @@ function setup() {
   }
   createP(
     "Appuyez sur 'd' pour afficher les infos de debug.<br/>Click souris pour générer de nouveaux véhicules."
-  );
+  ); 
 }
 
 function draw() {
@@ -51,11 +51,13 @@ function draw() {
 function newPath() {
   // Simple suite de points partant de 30, 30 et allant vers 30, height - 30 etc.
   path = new Path();
-  let offset = 30;
+  let offset = 100;
   path.addPoint(offset, offset);
+  path.addPoint(300, 180);
   path.addPoint(width - offset, offset);
   path.addPoint(width - offset, height - offset);
   path.addPoint(width / 2, height - offset * 3);
+  path.addPoint(200,550);
   path.addPoint(offset, height - offset);
 }
 
@@ -70,9 +72,23 @@ function newVehicle(x, y) {
 function keyPressed() {
   if (key == "d") {
     debug = !debug;
+    Vehicle.debug = !debug;
+  } else if(key == "s") {
+    let v = newVehicle(mouseX, mouseY);
+    v.maxspeed = 8;
+    v.couleur = "red"
+  } else if (key == "w") {
+    // on cree un véhicule wander
+    let v = new Vehicle(mouseX, mouseY, 2, 0.25);
+    v.wanderWeight = 1;
+    v.followPathWeight = 0;
+    v.separateWeight = 0;
+    v.r = 30;
+    v.couleur = "lightgreen";
+    vehicles.push(v);
   }
 }
 
-function mousePressed() {
+function mouseDragged() {
   newVehicle(mouseX, mouseY);
 }
