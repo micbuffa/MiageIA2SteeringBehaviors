@@ -16,6 +16,8 @@ class Vehicle {
     this.wanderTheta = PI / 2;
     this.displaceRange = 0.3;
 
+    // trainée derrière les véhicules
+    this.pathLength = 20;
     this.path = [];
   }
 
@@ -25,19 +27,21 @@ class Vehicle {
     wanderPoint.setMag(this.distanceCercle);
     wanderPoint.add(this.pos);
 
-    // on le dessine sous la forme d'une petit cercle rouge
-    fill(255, 0, 0);
-    noStroke();
-    circle(wanderPoint.x, wanderPoint.y, 8);
+    if (Vehicle.debug) {
+      // on le dessine sous la forme d'une petit cercle rouge
+      fill(255, 0, 0);
+      noStroke();
+      circle(wanderPoint.x, wanderPoint.y, 8);
 
-    // Cercle autour du point
-    noFill();
-    stroke(255);
-    circle(wanderPoint.x, wanderPoint.y, this.wanderRadius * 2);
+      // Cercle autour du point
+      noFill();
+      stroke(255);
+      circle(wanderPoint.x, wanderPoint.y, this.wanderRadius * 2);
 
-    // on dessine une ligne qui relie le vaisseau à ce point
-    // c'est la ligne blanche en face du vaisseau
-    line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+      // on dessine une ligne qui relie le vaisseau à ce point
+      // c'est la ligne blanche en face du vaisseau
+      line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+    }
 
     // On va s'occuper de calculer le point vert SUR LE CERCLE
     // il fait un angle wanderTheta avec le centre du cercle
@@ -51,15 +55,16 @@ class Vehicle {
     // maintenant wanderPoint c'est un point sur le cercle
     wanderPoint.add(x, y);
 
-    // on le dessine sous la forme d'un cercle vert
-    fill(0, 255, 0);
-    noStroke();
-    circle(wanderPoint.x, wanderPoint.y, 16);
+    if (Vehicle.debug) {
+      // on le dessine sous la forme d'un cercle vert
+      fill(0, 255, 0);
+      noStroke();
+      circle(wanderPoint.x, wanderPoint.y, 16);
 
-    // on dessine le vecteur desiredSpeed qui va du vaisseau au point vert
-    stroke(255);
-    line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
-
+      // on dessine le vecteur desiredSpeed qui va du vaisseau au point vert
+      stroke(255);
+      line(this.pos.x, this.pos.y, wanderPoint.x, wanderPoint.y);
+    }
     // On a donc la vitesse désirée que l'on cherche qui est le vecteur
     // allant du vaisseau au cercle vert. On le calcule :
     // ci-dessous, steer c'est la desiredSpeed directement !
@@ -130,9 +135,9 @@ class Vehicle {
     // on rajoute la position courante dans le tableau du chemin
     this.path.push(this.pos.copy());
 
-    // si le tableau a plus de 50 éléments, on vire le plus ancien
+    // si le tableau a plus de this.pathLength éléments, on vire le plus ancien
     // TODO
-    if (this.path.length > 50) {
+    if (this.path.length > this.pathLength) {
       this.path.shift();
     }
 
@@ -164,7 +169,7 @@ class Vehicle {
     // dessin du vaisseau avec image
     push();
     translate(this.pos.x, this.pos.y);
-    rotate(this.vel.heading()-PI/2);
+    rotate(this.vel.heading() - PI / 2);
     imageMode(CENTER);
     image(this.image, 0, 0, this.r * 2, this.r * 2);
     pop();

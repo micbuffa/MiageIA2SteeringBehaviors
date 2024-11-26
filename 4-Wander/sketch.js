@@ -1,5 +1,6 @@
 let vehicles = [];
 let imageFusee;
+let debugCheckbox;
 
 function preload() {
   // on charge une image de fusée pour le vaisseau
@@ -16,42 +17,32 @@ function setup() {
   }
 
   // On cree des sliders pour régler les paramètres
-  creerSliders();
+  creerSlidersPourProprietesVehicules();
+
+  creerSliderPourNombreDeVehicules(nbVehicles);
+
+  creerSliderPourLongueurCheminDerriereVehicules(20);
 }
 
-function creerSliders() {
+function creerSlidersPourProprietesVehicules() {
   // paramètres de la fonction custom de création de sliders :
   // label, min, max, val, step, posX, posY, propriete des véhicules
   creerUnSlider("Rayon du cercle", 10, 200, 50, 1, 10, 20, "wanderRadius");
   creerUnSlider("Distance du cercle", 10, 400, 100, 1, 10, 40, "distanceCercle");
-/*
-  // On crée un slider pour la distance du cercle par rapport au vaisseau
-  // min, max, valeur, pas
-  let distCercleSlider = createSlider(10, 200, 50, 1);
-  
-  // label pour le slider
-  let distCercleLabel = createP("Distance du cercle");
-  distCercleLabel.position(10, 5);
-  // couleur blanche
-  distCercleLabel.style('color', 'white');
+  creerUnSlider("Deviation maxi", 0, PI/2, 0.3, 0.01, 10, 60, "displaceRange");
+  creerUnSlider("Vitesse maxi", 1, 20, 4, 0.1, 10, 80, "maxSpeed");
+  creerUnSlider("Max force", 0.05, 1, 0.2, 0.1, 10, 100, "maxForce");
 
-  distCercleSlider.position(140, 20);
-  // on affiche la valeur du slider à droite du slider
-  let distCercleValue = createSpan(distCercleSlider.value());
-  distCercleValue.position(300, 20);
-  distCercleValue.style('color', 'white');
-  // on affiche la valeur du slider
-  distCercleValue.html(distCercleSlider.value());
-  
+  // checkbox pour debug on / off
+  debugCheckbox = createCheckbox('Debug ', false);
+  debugCheckbox.position(10, 140);
+  debugCheckbox.style('color', 'white');
 
-  distCercleSlider.input(() => {
-    vehicles.forEach(vehicle => {
-      vehicle.wanderRadius = distCercleSlider.value();
-      distCercleValue.html(distCercleSlider.value());
-    });
+  debugCheckbox.changed(() => {
+    Vehicle.debug = !Vehicle.debug;
   });
-*/
 }
+
 function creerUnSlider(label, min, max, val, step, posX, posY, propriete) {
   let slider = createSlider(min, max, val, step);
   
@@ -72,8 +63,47 @@ function creerUnSlider(label, min, max, val, step, posX, posY, propriete) {
       vehicle[propriete] = slider.value();
     });
   });
-
 }
+
+function creerSliderPourNombreDeVehicules(nbVehicles) {
+   // un slider pour changer le nombre de véhicules
+  // min, max, valeur, pas
+  let nbVehiclesSlider = createSlider(1, 200, 10, 1);
+  nbVehiclesSlider.position(160, 185);
+  let nbVehiclesLabel = createP("Nb de véhicules : " + nbVehicles);
+  nbVehiclesLabel.position(10, 170);
+  nbVehiclesLabel.style('color', 'white');
+  // écouteur
+  nbVehiclesSlider.input(() => {
+    // on efface les véhicules
+    vehicles = [];
+    // on en recrée
+    for(let i=0; i < nbVehiclesSlider.value(); i++) {
+      let vehicle = new Vehicle(100, 100, imageFusee);
+      vehicles.push(vehicle);
+    }
+    // on met à jour le label
+    nbVehiclesLabel.html("Nb de véhicules : " + nbVehiclesSlider.value());
+  });
+}
+
+function creerSliderPourLongueurCheminDerriereVehicules(l) {
+  let slider = createSlider(10, 150, l, 1);
+  slider.position(160, 162);
+  let label = createP("Longueur trainée : " + l);
+  label.position(10, 145);
+  label.style('color', 'white');
+  // écouteur
+  slider.input(() => {
+    label.html("Longueur trainée : " + slider.value());
+    vehicles.forEach(vehicle => {
+      vehicle.path = [];
+      vehicle.pathLength = slider.value();
+    });
+  });
+}
+
+// appelée 60 fois par seconde
 function draw() {
   background(0);
   //background(0, 0, 0, 20);
@@ -85,5 +115,12 @@ function draw() {
     vehicle.show();
     vehicle.edges();
   });
-  
+}
+
+function keyPressed() {
+  if (key === 'd') {
+    Vehicle.debug = !Vehicle.debug;
+    // changer la checkbox, elle doit être checkée si debug est true
+    debugCheckbox.checked(Vehicle.debug);
+  }
 }
