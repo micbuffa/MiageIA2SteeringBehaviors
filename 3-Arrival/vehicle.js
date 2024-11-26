@@ -31,7 +31,7 @@ class Vehicle {
     // 2nd argument true enables the arrival behavior
     // 3rd argumlent d is the distance behind the target
     // for "snake" behavior
-    return this.seek(target, true , d);
+    return this.seek(target, true, d);
   }
 
   flee(target) {
@@ -41,23 +41,25 @@ class Vehicle {
   // TODO : modifier pour ajouter un 3ème paramètre d
   // qui dira à quelle distance derrière le véhicule on doit s'arrêter
   // si d=0 c'est le comportement arrival normal
-  seek(target, arrival) {
+  seek(target, arrival, d = 0) {
     let force = p5.Vector.sub(target, this.pos);
     let desiredSpeed = this.maxSpeed;
 
-    if(arrival) {
+    if (arrival) {
       // on dessine un cercle de rayon 100 
       // centré sur le point d'arrivée
 
-      noFill();
-      stroke("white")
-      circle(target.x, target.y, this.rayonZoneDeFreinage)
-
+      if (Vehicle.debug) {
+        noFill();
+        stroke("white")
+        circle(target.x, target.y, this.rayonZoneDeFreinage)
+      }
+      
       // on calcule la distance du véhicule
       // par rapport au centre du cercle
       const dist = p5.Vector.dist(this.pos, target);
-      
-      if(dist < this.rayonZoneDeFreinage) {
+
+      if (dist < this.rayonZoneDeFreinage) {
         // on va diminuer de manière proportionnelle à
         // la distance, la vitesse
         // on va utiliser la fonction map(...) de P5
@@ -65,7 +67,7 @@ class Vehicle {
         // intervalle initial, vers la même valeur dans un
         // autre intervalle
         // newVal = map(value, start1, stop1, start2, stop2, [withinBounds])
-        desiredSpeed = map(dist, 0, this.rayonZoneDeFreinage, 0, this.maxSpeed)
+        desiredSpeed = map(dist, d, this.rayonZoneDeFreinage, 0, this.maxSpeed)
       }
     }
 
@@ -106,7 +108,7 @@ class Vehicle {
       // qui devient inversement proportionnelle à la distance.
       // si d = rayon alors desiredSpeed = maxSpeed
       // si d = 0 alors desiredSpeed = 0
-      if(distance < this.rayonZoneDeFreinage) {
+      if (distance < this.rayonZoneDeFreinage) {
         desiredSpeed = map(distance, d, this.rayonZoneDeFreinage, 0, this.maxSpeed);
       }
     }
