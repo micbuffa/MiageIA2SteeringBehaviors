@@ -27,7 +27,7 @@ class Vehicle {
     // vitesse maximale du véhicule
     this.maxSpeed = 6;
     // force maximale appliquée au véhicule
-    this.maxForce = 0.4;
+    this.maxForce = 0.25;
     this.color = "white";
     // à peu près en secondes
     this.dureeDeVie = 5;
@@ -54,7 +54,7 @@ class Vehicle {
 
     seekForce.mult(0.2);
     avoidForce.mult(0.9);
-    separateForce.mult(0.9);
+    separateForce.mult(0.3);
 
     this.applyForce(seekForce);
     this.applyForce(avoidForce);
@@ -63,43 +63,108 @@ class Vehicle {
 
   avoid(obstacles) {
     // TODO
-     // calcul d'un vecteur ahead devant le véhicule
+    // calcul d'un vecteur ahead devant le véhicule
     // il regarde par exemple 50 frames devant lui
+    let ahead = this.vel.copy();
+    ahead.mult(50);
+    // Calcul de ahead2 situé au milieu de ahead
+    let ahead2 = ahead.copy();
+    ahead2.mult(0.5);
 
+    if(Vehicle.debug) {
     // on le dessine avec ma méthode this.drawVector(pos vecteur, color)
+    this.drawVector(this.pos, ahead, "yellow");
+    // on dessine le vecteur ahead2 en bleu
+    this.drawVector(this.pos, ahead2, "blue");
+    }
 
     // Calcul des coordonnées du point au bout de ahead
+    let pointAuBoutDeAhead = this.pos.copy().add(ahead);
+    // Calcul des coordonnées du point au bout de ahead2
+    let pointAuBoutDeAhead2 = this.pos.copy().add(ahead2);
+
 
     // Detection de l'obstacle le plus proche
+    let obstacleLePlusProche = this.getObstacleLePlusProche(obstacles);
 
     // Si pas d'obstacle, on renvoie un vecteur nul
+    if (obstacleLePlusProche == undefined) {
+      return createVector(0, 0);
+    }
 
-    // On calcule la distance entre le cercle et le bout du vecteur ahead
+    // On calcule la distance entre l'obstacle le plus proche 
+    // et le bout du vecteur ahead
+    let distance = pointAuBoutDeAhead.dist(obstacleLePlusProche.pos);
+    // idem avec ahead2
+    let distance2 = pointAuBoutDeAhead2.dist(obstacleLePlusProche.pos);
+    // idem avec la position du véhicule
+    let distance3 = this.pos.dist(obstacleLePlusProche.pos);
 
-     // On dessine avec un cercle le point au bout du vecteur ahead pour debugger
+
+    if(Vehicle.debug) {
+    // On dessine avec un cercle le point au bout du vecteur ahead pour debugger
+    fill(255, 0, 0);
+    circle(pointAuBoutDeAhead.x, pointAuBoutDeAhead.y, 10);
+    // et un au bout de ahead2
+    fill(0, 255, 0);
+    circle(pointAuBoutDeAhead2.x, pointAuBoutDeAhead2.y, 10);
 
     // On dessine la zone d'évitement
     // Pour cela on trace une ligne large qui va de la position du vaisseau
     // jusqu'au point au bout de ahead
+    stroke(100, 100);
+    strokeWeight(this.largeurZoneEvitementDevantVaisseau);
+    line(this.pos.x, this.pos.y, pointAuBoutDeAhead.x, pointAuBoutDeAhead.y);
+    }
+
+    // Calcul de la plus petite distance entre distance et distance2
+    distance = min(distance, distance2);
+    // calcul de la plus petite distance entre distance et distance3
+    distance = min(distance, distance3);
 
     // si la distance est < rayon de l'obstacle
     // il y a collision possible et on dessine l'obstacle en rouge
+    if (distance < obstacleLePlusProche.r + this.largeurZoneEvitementDevantVaisseau) {
 
-        // calcul de la force d'évitement. C'est un vecteur qui va
-        // du centre de l'obstacle vers le point au bout du vecteur ahead
+      if(this.pos.dist(obstacleLePlusProche.pos) < (this.r + obstacleLePlusProche.r)) {
+        // il y a VRAIMENT collision, on dessine l'obstacle en rouge
+        //obstacleLePlusProche.color = "red";
+      } else {
+        //obstacleLePlusProche.color = "green";
+      }
 
+      // calcul de la force d'évitement. C'est un vecteur qui va
+      // du centre de l'obstacle vers le point au bout du vecteur ahead
+      // on va appliquer force = vitesseDesiree - vitesseActuelle
+      let desiredVelocity;
+      if(distance == distance2) {
+         desiredVelocity = p5.Vector.sub(pointAuBoutDeAhead2, obstacleLePlusProche.pos);
+      } else if(distance == distance3) {
+          desiredVelocity = p5.Vector.sub(this.pos, obstacleLePlusProche.pos);
+      } else {
+          desiredVelocity = p5.Vector.sub(pointAuBoutDeAhead, obstacleLePlusProche.pos);
+      }
+
+      if(Vehicle.debug) {
         // on le dessine en jaune pour vérifier qu'il est ok (dans le bon sens etc)
+        this.drawVector(obstacleLePlusProche.pos, desiredVelocity, "yellow");
+      }
+      // Dessous c'est l'ETAPE 2 : le pilotage (comment on se dirige vers la cible)
+      // on limite ce vecteur desiredVelocity à  maxSpeed
+      desiredVelocity.setMag(this.maxSpeed);
 
-        // Dessous c'est l'ETAPE 2 : le pilotage (comment on se dirige vers la cible)
-      // on limite ce vecteur à la longueur maxSpeed
-      // force est la vitesse désirée
-      // enlever les commentaires
-      //force.setMag(this.maxSpeed);
       // on calcule la force à appliquer pour atteindre la cible avec la formule
       // que vous commencez à connaitre : force = vitesse désirée - vitesse courante
-      //force.sub(this.vel);
+      let force = p5.Vector.sub(desiredVelocity, this.vel);
+
       // on limite cette force à la longueur maxForce
-      //force.limit(this.maxForce);
+      force.limit(this.maxForce);
+
+      return force;
+    } else {
+      //obstacleLePlusProche.color = "green";
+      return createVector(0, 0);
+    }
 
   }
 
@@ -188,6 +253,7 @@ class Vehicle {
     obstacles.forEach(o => {
       // Je calcule la distance entre le vaisseau et l'obstacle
       const distance = this.pos.dist(o.pos);
+
       if (distance < plusPetiteDistance) {
         plusPetiteDistance = distance;
         obstacleLePlusProche = o;
@@ -376,6 +442,13 @@ class Vehicle {
     triangle(-this.r_pourDessin, -this.r_pourDessin / 2, -this.r_pourDessin, this.r_pourDessin / 2, this.r_pourDessin, 0);
     // Que fait cette ligne ?
     //this.edges();
+
+    // cercle pour le debug
+    if (Vehicle.debug) {
+      stroke(255);
+      noFill();
+      circle(0, 0, this.r);
+    }
 
     // draw velocity vector
     pop();

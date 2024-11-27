@@ -14,7 +14,7 @@ function setup() {
   // On cree un obstace au milieu de l'écran
   // un cercle de rayon 100px
   // TODO
-  obstacles.push(new Obstacle(width / 2, height / 2, 100));
+  obstacles.push(new Obstacle(width / 2, height / 2, 100, "green"));
 }
 
 function draw() {
@@ -47,7 +47,7 @@ function draw() {
 
 function mousePressed() {
   // TODO : ajouter un obstacle de taille aléatoire à la position de la souris
-  obstacles.push(new Obstacle(mouseX, mouseY, random(20, 100)));
+  obstacles.push(new Obstacle(mouseX, mouseY, random(20, 100), "green"));
 }
 
 function keyPressed() {

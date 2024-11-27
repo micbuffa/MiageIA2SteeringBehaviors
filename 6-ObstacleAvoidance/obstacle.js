@@ -1,8 +1,8 @@
 class Obstacle {
-  constructor(x, y, r) {
+  constructor(x, y, r, couleur) {
     this.pos = createVector(x, y);
     this.r = r;
-    this.color = color(0, 255, 0);
+    this.color = couleur;
   }
 
   show() {
