@@ -48,8 +48,10 @@ class Boid {
 
   separation(boids) {
     let perceptionRadius = 24;
+
     let steering = createVector();
     let total = 0;
+    
     for (let other of boids) {
       let d = dist(this.position.x, this.position.y, other.position.x, other.position.y);
       if (other != this && d < perceptionRadius) {
@@ -70,8 +72,10 @@ class Boid {
 
   cohesion(boids) {
     let perceptionRadius = 50;
+
     let steering = createVector();
     let total = 0;
+
     for (let other of boids) {
       let d = dist(this.position.x, this.position.y, other.position.x, other.position.y);
       if (other != this && d < perceptionRadius) {
@@ -81,6 +85,7 @@ class Boid {
     }
     if (total > 0) {
       steering.div(total);
+
       steering.sub(this.position);
       steering.setMag(this.maxSpeed);
       steering.sub(this.velocity);

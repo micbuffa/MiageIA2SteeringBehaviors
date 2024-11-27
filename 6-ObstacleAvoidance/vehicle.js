@@ -53,7 +53,7 @@ class Vehicle {
     let separateForce = this.separate(vehicules);
 
     seekForce.mult(0.2);
-    avoidForce.mult(0.9);
+    avoidForce.mult(3);
     separateForce.mult(0.3);
 
     this.applyForce(seekForce);

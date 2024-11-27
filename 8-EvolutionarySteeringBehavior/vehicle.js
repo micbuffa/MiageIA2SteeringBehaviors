@@ -20,8 +20,13 @@ class Vehicle {
     this.maxspeed = 5;
     this.maxforce = 0.5;
 
+    // La vie, à zéro le véhicule est mort
     this.health = 1;
 
+    // 4 gènes : poids de la nourriture, 
+    //           poids du poison, 
+    //           perception de la nourriture (rayon cercle de détection), 
+    //           perception du poison (rayon cercle de détection)
     this.dna = [];
     if (dna === undefined) {
       // Food weight
@@ -30,10 +35,11 @@ class Vehicle {
       this.dna[1] = random(-2, 2);
       // Food perception
       this.dna[2] = random(0, 100);
-      // Poision Percepton
+      // Poison Percepton
       this.dna[3] = random(0, 100);
     } else {
-      // Mutation
+      // Mutation lors d'un clonage, on va recréer 
+      // un individu avec des gènes légèrement modifiés
       this.dna[0] = dna[0];
       if (random(1) < mr) {
         this.dna[0] += random(-0.1, 0.1);
@@ -57,6 +63,10 @@ class Vehicle {
   // Method to update location
   update() {
 
+    // 60 fois par seconde, on perd de la vie, d'où la 
+    // nécessité de se nourrir.
+    // à chaque frame on perd 0.005 de vie, donc à 60 images par
+    // seconde, on perd 0.3 de vie par seconde
     this.health -= 0.005;
 
     // Update velocity
@@ -74,17 +84,24 @@ class Vehicle {
   }
 
   behaviors(good, bad) {
+    // G = good (food)
+    // B = bad (poison)
+    // steerG = force qui attire vers la nourriture
+    // steerB = force qui repousse du poison
     const steerG = this.eat(good, 0.2, this.dna[2]);
     const steerB = this.eat(bad, -1, this.dna[3]);
 
+    // on applique les poids des gènes
     steerG.mult(this.dna[0]);
     steerB.mult(this.dna[1]);
 
+    // on applique les forces
     this.applyForce(steerG);
     this.applyForce(steerB);
   }
 
   clone() {
+    // 2% de chances de clonage
     if (random(1) < 0.002) {
       return new Vehicle(this.position.x, this.position.y, this.dna);
     } else {
@@ -92,17 +109,33 @@ class Vehicle {
     }
   }
 
+  // comportement de recherche de nourriture
+  // nutrition peut être positive (nourriture) ou négative (poison)
+  // perception est le rayon de détection de la nourriture 
+  // ou du poison
   eat(list, nutrition, perception) {
     let record = Infinity;
     let closest = null;
+
+    // on parcourt la liste des éléments à manger
+    // on cherche le plus proche
     for (let i = list.length - 1; i >= 0; i--) {
       const d = this.position.dist(list[i]);
 
+      // si l'élément est à portée
+      // on le mange et on gagne de la vie ou on en perd
+      // selon que c'est de la nourriture ou du poison
+      // on a pris this.maxspeed qui vaut 5 ici pour la distance
+      // à partir de laquelle on mange l'élément. On aurait pu
+      // definir une nouvelle variable
       if (d < this.maxspeed) {
         list.splice(i, 1);
         this.health += nutrition;
       } else {
+        // si l'élément n'est pas à portée, 
+        // on cherche le plus proche
         if (d < record && d < perception) {
+          // on garde en mémoire la distance et l'élément
           record = d;
           closest = list[i];
         }
@@ -110,7 +143,6 @@ class Vehicle {
     }
 
     // This is the moment of eating!
-
     if (closest != null) {
       return this.seek(closest);
     }
@@ -121,7 +153,6 @@ class Vehicle {
   // A method that calculates a steering force towards a target
   // STEER = DESIRED MINUS VELOCITY
   seek(target) {
-
     const desired = p5.Vector.sub(target, this.position); // A vector pointing from the location to the target
 
     // Scale to maximum speed
@@ -146,7 +177,6 @@ class Vehicle {
     push();
     translate(this.position.x, this.position.y);
     rotate(angle);
-
 
     if (debug.checked()) {
       strokeWeight(3);
