@@ -23,8 +23,8 @@ class Vehicle {
     // La vie, à zéro le véhicule est mort
     this.health = 1;
 
-    // 4 gènes : poids de la nourriture, 
-    //           poids du poison, 
+    // 4 gènes : poids de la force d'attraction vers la nourriture, 
+    //           poids  de la force d'attraction vers le poison, 
     //           perception de la nourriture (rayon cercle de détection), 
     //           perception du poison (rayon cercle de détection)
     this.dna = [];
@@ -128,7 +128,7 @@ class Vehicle {
       // on a pris this.maxspeed qui vaut 5 ici pour la distance
       // à partir de laquelle on mange l'élément. On aurait pu
       // definir une nouvelle variable
-      if (d < this.maxspeed) {
+      if (d < 5) {
         list.splice(i, 1);
         this.health += nutrition;
       } else {
@@ -218,6 +218,7 @@ class Vehicle {
 
     let desired = null;
 
+    // si le véhicule est trop à gauche ou trop à droite
     if (this.position.x < d) {
       desired = createVector(this.maxspeed, this.velocity.y);
     } else if (this.position.x > width - d) {

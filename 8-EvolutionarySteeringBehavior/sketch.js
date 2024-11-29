@@ -49,7 +49,7 @@ function draw() {
   background(0);
 
   // On fait apparaitre aléatoirement de la nourriture
-  if (random(1) < 0.1) {
+  if (random(1) < 0.2) {
     const x = random(width);
     const y = random(height);
     food.push(createVector(x, y));
