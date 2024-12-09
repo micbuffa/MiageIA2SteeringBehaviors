@@ -1,4 +1,6 @@
 class Vehicle {
+  static debug = false;
+  
   constructor(x, y, image) {
     this.pos = createVector(x, y);
     this.vel = createVector(1, 0);
